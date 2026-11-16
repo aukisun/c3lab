@@ -44,11 +44,14 @@ Photo colours are real pixel colours: the image is sampled without blending, sim
 The whole app is one file — `index.html` — with no build step and no dependencies apart from two Google Fonts (Syne, Space Mono).
 
 ```
-index.html   the app: markup, styles and script
-README.md    this file
+index.html      the app: markup, styles and script
+README.md       this file
+CLAUDE.md       project notes and rules for Claude Code
+.claude/        Claude Code skills and permissions
+.vercelignore   keeps the Claude Code files off the live site
 ```
 
-Run it locally by opening `index.html` in a browser.
+Run it locally with any static server, for example `python3 -m http.server 8000`, then open http://localhost:8000.
 
 ## Deploy
 
@@ -57,4 +60,4 @@ Hosted on Vercel. Every push to `main` deploys automatically to [c3lab.vercel.ap
 ## History
 
 - **v2** — C³ landing: layered capsule palette, photo colour weights, OKLCH engine with four harmonies.
-- **v1** — the original Complimentary Color Creator; still in the git history (commit `1ffb2a4`).
+- **v1** — the original Complimentary Color Creator; still in the git history (tag `v1`, commit `1ffb2a4`).
