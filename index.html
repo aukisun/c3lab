@@ -234,9 +234,48 @@ body.kbd .pill:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
 }
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
+/* Canvas — a Bauhaus test sheet: the chosen colors at work on paper */
+.canvas-lab{width:100%;max-width:1180px;margin:96px auto 0}
+.cv-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:18px}
+.cv-title{margin:0;font-family:var(--display);font-weight:800;font-size:28px;letter-spacing:-.02em;color:var(--brand);transition:color .8s ease}
+.cv-sub{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.cv-grid{display:grid;grid-template-columns:minmax(0,40%) minmax(0,340px);justify-content:center;align-items:start;gap:clamp(28px,5vw,72px);margin-top:32px}
+.cv-art{min-width:0;display:flex;justify-content:center}
+.cv-art svg{display:block;max-width:100%;height:auto;box-shadow:0 30px 60px -30px rgba(20,8,0,.5)}
+.cv-panel{display:flex;flex-direction:column;gap:24px;min-width:0}
+.cv-group{display:flex;flex-direction:column;gap:10px}
+.cv-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.cv-chips{display:flex;flex-wrap:wrap;gap:9px}
+.cv-chip{width:28px;height:28px;border-radius:50%;padding:0;cursor:pointer;border:1px solid color-mix(in srgb,var(--ink) 16%,transparent);transition:box-shadow .2s}
+.cv-chip.sm{width:22px;height:22px}
+.cv-chip[aria-pressed="true"]{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--ink)}
+.cv-rows{display:flex;flex-direction:column;gap:6px}
+.cv-row{display:flex;align-items:center;gap:4px;border:1px solid var(--line);background:var(--field);border-radius:999px;padding:5px 4px 5px 6px}
+.cv-sw{width:24px;height:24px;border-radius:50%;flex:none;border:1px solid rgba(0,0,0,.12)}
+.cv-hash{color:var(--muted);font-size:14px;margin-left:8px}
+.cv-hex{flex:1;min-width:0;font-family:var(--mono);font-size:14px;letter-spacing:.08em;text-transform:uppercase;border:0;background:transparent;color:var(--ink);outline:none}
+.cv-x{border:0;background:none;color:var(--muted);cursor:pointer;font:inherit;font-size:18px;line-height:1;padding:2px 10px}
+.cv-x:hover{color:var(--ink)}
+.cv-seg{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.cv-seg button{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:6px 12px;cursor:pointer;transition:background-color .2s,color .2s}
+.cv-seg button:hover{color:var(--ink)}
+.cv-seg button[aria-pressed="true"]{background:var(--btn);border-color:var(--btn);color:var(--btn-ink)}
+.cv-seg .gap{width:10px}
+.cv-field{width:100%;font-family:var(--mono);font-size:14px;border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:999px;padding:10px 16px;outline:none}
+.cv-field::placeholder{color:var(--muted)}
+.cv-select{position:relative}
+.cv-select select{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:38px}
+.cv-select::after{content:'▾';position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+select:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.cv-actions{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.cv-link{font:inherit;font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:none;border:0;color:var(--muted);cursor:pointer;padding:0}
+.cv-link:hover{color:var(--ink)}
+
 @media (max-width:640px){
   .modes{margin-top:36px}
   .brand-mark{font-size:36px}
+  .canvas-lab{margin-top:64px}
+  .cv-grid{grid-template-columns:minmax(0,1fr);gap:28px}
 }
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
@@ -303,6 +342,55 @@ body.kbd .pill:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
     <span class="ref-cap">Reference · color weight</span>
   </div>
   <div class="field" id="field"></div>
+</section>
+
+<section class="canvas-lab" id="canvasLab" aria-labelledby="cvTitle">
+  <div class="cv-head">
+    <h2 class="cv-title" id="cvTitle">Canvas</h2>
+    <span class="cv-sub">Your colors at work · simple shapes on paper</span>
+  </div>
+  <div class="cv-grid">
+    <div class="cv-art" id="cvArt" role="img" aria-label="Poster made of the chosen colors"></div>
+    <div class="cv-panel">
+      <div class="cv-group">
+        <span class="cv-label" id="cvPickLabel">Colors · pick 2–4 from the palette</span>
+        <div class="cv-chips" id="cvChips" role="group" aria-labelledby="cvPickLabel"></div>
+        <div class="cv-rows" id="cvRows"></div>
+      </div>
+      <div class="cv-group">
+        <span class="cv-label">Paper · ink</span>
+        <div class="cv-seg" id="cvPaper">
+          <button type="button" data-paper="cream" aria-pressed="true">Cream</button>
+          <button type="button" data-paper="white" aria-pressed="false">White</button>
+          <span class="gap" aria-hidden="true"></span>
+          <button type="button" id="cvInk" aria-pressed="true" title="Use black as a neutral">Ink</button>
+        </div>
+      </div>
+      <div class="cv-group">
+        <span class="cv-label">Format</span>
+        <div class="cv-seg" id="cvFormat">
+          <button type="button" data-f="3:4" aria-pressed="true">Poster 3:4</button>
+          <button type="button" data-f="1:1" aria-pressed="false">Square</button>
+          <button type="button" data-f="9:16" aria-pressed="false">Story 9:16</button>
+          <button type="button" data-f="16:9" aria-pressed="false">Banner 16:9</button>
+        </div>
+      </div>
+      <div class="cv-group">
+        <label class="cv-label" for="cvText">Text</label>
+        <input class="cv-field" id="cvText" maxlength="48" placeholder="Brand name or slogan" autocomplete="off" spellcheck="false">
+        <div class="cv-select"><select class="cv-field" id="cvFont" aria-label="Font"></select></div>
+        <div class="cv-chips" id="cvTextColor" role="group" aria-label="Text color"></div>
+        <div class="cv-seg" id="cvPlace">
+          <button type="button" data-place="band" aria-pressed="true" title="Text on a strip of paper under the shapes">On paper</button>
+          <button type="button" data-place="over" aria-pressed="false" title="Text over the shapes">Over shapes</button>
+        </div>
+      </div>
+      <div class="cv-actions">
+        <button class="go" id="cvShuffle" type="button">Shuffle</button>
+        <button class="cv-link" id="cvCopy" type="button">Copy SVG</button>
+      </div>
+    </div>
+  </div>
 </section>
 
 
@@ -595,7 +683,7 @@ function render(colors,bIdx){
       (info.pantone?'<span class="name">'+info.pantone+'</span>':'')+
       '<span class="name">'+info.name+'</span>';
   });
-  theme(colors);layout();
+  theme(colors);layout();cvSync();
 }
 
 function theme(colors){
@@ -848,6 +936,202 @@ document.getElementById('copySvg').addEventListener('click',()=>{
   const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><g id="Complementary · ${harmony==='photo'?'Photo':HARMONIES[harmony].name} · ${baseHex}">${shapes}</g></svg>`;
   copy(svg,'SVG copied. Paste into Figma with Cmd+V');
 });
+
+/* ---------- canvas: a Bauhaus test sheet — up to 4 chosen colors at work on paper ---------- */
+// The layout (blocks on a grid, one shape per block) depends only on the seed, format, number of colors and ink,
+// so editing a HEX, switching paper or typing text recolors the same poster. Shuffle draws a new one.
+const CV_GRID={'3:4':[3,4],'1:1':[3,3],'9:16':[3,5],'16:9':[5,3]};
+const CV_PAPER={cream:'#F3EDE2',white:'#FFFFFF'},CV_INK='#1D1B1A';
+const CV_FONTS=[   // [family, weight, Google Fonts query — null when the page already loads it]
+  ['Syne',800,null],['Inter',800,'Inter:wght@800'],['Space Grotesk',700,'Space+Grotesk:wght@700'],
+  ['Archivo Black',400,'Archivo+Black'],['Bebas Neue',400,'Bebas+Neue'],['Unbounded',700,'Unbounded:wght@700'],
+  ['DM Serif Display',400,'DM+Serif+Display'],['Playfair Display',800,'Playfair+Display:wght@800'],['Space Mono',700,null]];
+// roles inside a layout: -1 paper, -2 ink, 0..3 the chosen colors
+const cv={sel:[],auto:true,paper:'cream',ink:true,format:'3:4',seed:11,text:'',font:0,tc:-2,place:'band',L:null,svg:''};
+const cvArt=document.getElementById('cvArt'),cvChips=document.getElementById('cvChips'),
+  cvRows=document.getElementById('cvRows'),cvTC=document.getElementById('cvTextColor'),cvFontSel=document.getElementById('cvFont');
+const cvN=v=>Math.round(v*10)/10;
+const cvEsc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+function cvRng(seed){let a=seed>>>0;return()=>{a=a+0x6D2B79F5>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+function cvPick(R,items){let s=0;items.forEach(i=>s+=i[1]);let r=R()*s;for(const i of items){if((r-=i[1])<0)return i[0]}return items[items.length-1][0]}
+
+function cvLayout(){
+  const R=cvRng(cv.seed),[cols,rows]=CV_GRID[cv.format],n=cv.sel.length;
+  // cut the grid into blocks: 1×1 up to 2×2, now and then a long 1×3 strip
+  const cut=(c,r,w,h)=>{
+    const fits=(w<=2&&h<=2)||w*h===3;
+    if((w===1&&h===1)||(fits&&R()<.5))return[{c,r,w,h}];
+    if(h===1||(w>1&&R()<w/(w+h))){const k=1+Math.floor(R()*(w-1));return[...cut(c,r,k,h),...cut(c+k,r,w-k,h)]}
+    const k=1+Math.floor(R()*(h-1));return[...cut(c,r,w,k),...cut(c,r+k,w,h-k)];
+  };
+  const blocks=cut(0,0,cols,rows);
+  const roles=[[-1,2.4]];if(cv.ink)roles.push([-2,1.2]);for(let i=0;i<n;i++)roles.push([i,2.6/n]);
+  blocks.forEach(b=>{
+    const long=Math.max(b.w,b.h)>=2*Math.min(b.w,b.h);
+    b.shape=cvPick(R,long?[['capsule',3],['arch',3],['half',2],['diag',2],['circle',1],['none',1]]
+                         :[['circle',3],['quarter',3],['half',2.5],['diag',1.5],['arch',1],['none',1.5]]);
+    b.dir=Math.floor(R()*4);b.k=R();
+    b.bg=cvPick(R,roles);
+    b.fg=cvPick(R,roles.filter(x=>x[0]!==b.bg).map(([v,w])=>[v,v>=0?w*1.5:w*.6]));
+  });
+  // every chosen color shows up at least once
+  const uses=v=>blocks.filter(b=>b.bg===v||(b.fg===v&&b.shape!=='none')).length;
+  const spare=v=>v<0||uses(v)>1;   // paper, ink, or a color that also shows elsewhere
+  for(let i=0;i<n;i++){
+    if(uses(i))continue;
+    let pool=blocks.filter(b=>b.bg!==i&&(b.shape==='none'||spare(b.fg)));
+    if(pool.length){const b=pool[Math.floor(R()*pool.length)];b.fg=i;if(b.shape==='none')b.shape='circle';continue}
+    pool=blocks.filter(b=>b.fg!==i&&spare(b.bg));
+    if(pool.length)pool[Math.floor(R()*pool.length)].bg=i;
+  }
+  return{cols,rows,blocks,frame:R()<.6,n};
+}
+
+function cvShape(b,x,y,w,h,fill){
+  const s=Math.min(w,h),F=` fill="${fill}"`,d=b.dir;
+  const disc=(cx,cy,r)=>`<circle cx="${cvN(cx)}" cy="${cvN(cy)}" r="${cvN(r)}"${F}/>`;
+  const rect=(rx,ry,rw,rh,rr)=>`<rect x="${cvN(rx)}" y="${cvN(ry)}" width="${cvN(rw)}" height="${cvN(rh)}" rx="${cvN(rr)}"${F}/>`;
+  switch(b.shape){
+    case 'circle':return disc(x+w/2,y+h/2,s*(b.k<.55?.5:.36));
+    case 'quarter':return disc(d&1?x+w:x,d&2?y+h:y,s*(b.k<.6?1:.72));          // a quarter disc out of a corner
+    case 'half':return d<2?disc(x+w/2,d?y:y+h,Math.min(w/2,h))                   // a dome on the floor or a bowl from the ceiling
+                          :disc(d===3?x:x+w,y+h/2,Math.min(h/2,w));
+    case 'arch':{                                                                 // a stadium cut by one edge
+      if(h>=w){const r=w/2;return rect(x,d&1?y-r:y,w,h+r,r)}
+      const r=h/2;return rect(d&1?x-r:x,y,w+r,h,r);}
+    case 'capsule':{const i=b.k<.5?0:s*.08;return rect(x+i,y+i,w-2*i,h-2*i,s/2-i)}
+    case 'diag':{const p=[[x,y],[x+w,y],[x+w,y+h],[x,y+h]];p.splice(d,1);
+      return `<polygon points="${p.map(q=>cvN(q[0])+','+cvN(q[1])).join(' ')}"${F}/>`}
+  }
+  return '';
+}
+
+const cvCtx=document.createElement('canvas').getContext('2d');
+function cvDraw(){
+  const L=cv.L;if(!L)return;
+  const[a,b]=cv.format.split(':').map(Number),W=1200,H=Math.round(W*b/a),S=Math.min(W,H);
+  const col=v=>v===-1?CV_PAPER[cv.paper]:v===-2?CV_INK:(cv.sel[v]||{hex:CV_INK}).hex;
+  const text=cv.text.trim(),band=!!text&&cv.place==='band';
+  const m=L.frame?Math.round(S*.06):0,pad=Math.round(S*.06),bandH=band?Math.round(S*(W>H?.2:.17)):0;
+  const cw=(W-2*m)/L.cols,ch=(H-2*m-bandH)/L.rows;
+  let defs='',grounds='',shapes='';const cid='cv'+cv.seed.toString(36)+'-';   // clip ids unique per poster
+  L.blocks.forEach((bk,i)=>{
+    const x=Math.round(m+bk.c*cw),y=Math.round(m+bk.r*ch),w=Math.round(m+(bk.c+bk.w)*cw)-x,h=Math.round(m+(bk.r+bk.h)*ch)-y;
+    // block edges are drawn pixel-sharp (crispEdges), so neighbours meet without a hairline of paper or ground
+    grounds+=`<rect id="Ground ${i+1}" x="${x}" y="${y}" width="${w}" height="${h}" fill="${col(bk.bg)}" shape-rendering="crispEdges"/>`;
+    if(bk.shape==='none')return;
+    defs+=`<clipPath id="${cid}${i}"><rect x="${x}" y="${y}" width="${w}" height="${h}" shape-rendering="crispEdges"/></clipPath>`;
+    shapes+=`<g id="Shape ${i+1}" clip-path="url(#${cid}${i})">${cvShape(bk,x,y,w,h,col(bk.fg))}</g>`;
+  });
+  const art=`<g id="Grounds">${grounds}</g><g id="Shapes">${shapes}</g>`;
+  let txt='';
+  if(text){
+    const[fam,wt]=CV_FONTS[cv.font];
+    cvCtx.font=`${wt} 100px "${fam}"`;
+    const per=cvCtx.measureText(text).width/100||.6*text.length,left=band?Math.max(m,pad):m+pad,maxW=W-2*left;
+    let fs=band?bandH*.52:S*.15;if(per*fs>maxW)fs=maxW/per;
+    const base=band?H-m-bandH/2+fs*.34:H-m-pad;
+    txt=`<text id="Text" x="${left}" y="${cvN(base)}" font-family="'${cvEsc(fam)}', sans-serif" font-weight="${wt}" font-size="${cvN(fs)}" fill="${col(cv.tc)}">${cvEsc(text)}</text>`;
+  }
+  cv.svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${defs}</defs>`+
+    `<g id="C3 Canvas ${cv.format}"><rect id="Paper" width="${W}" height="${H}" fill="${col(-1)}"/>${art}${txt}</g></svg>`;
+  cvArt.innerHTML=cv.svg;cvSize();
+}
+function cvSize(){
+  const svg=cvArt.firstElementChild;if(!svg)return;
+  const W=+svg.getAttribute('width'),H=+svg.getAttribute('height'),avail=cvArt.clientWidth,maxH=Math.min(innerHeight*.8,880);
+  let w=avail,h=avail*H/W;if(h>maxH){h=maxH;w=h*W/H}
+  svg.style.width=w+'px';svg.style.height=h+'px';
+}
+addEventListener('resize',()=>{clearTimeout(window.__cv);window.__cv=setTimeout(cvSize,120)});
+
+// which palette colors go on the canvas: the base plus the ones most different from it, skipping paper and ink
+function cvAutoPick(){
+  const o=palette.map(h=>hexToOklch(h));let cand=palette.map((_,i)=>i).filter(i=>o[i].L<.9&&o[i].L>.22);
+  if(cand.length<2)cand=palette.map((_,i)=>i);
+  const out=[cand.includes(baseIndex)?baseIndex:cand[0]];
+  while(out.length<Math.min(3,cand.length)){
+    let best=-1,bd=-1;
+    for(const i of cand){if(out.includes(i))continue;const d=Math.min(...out.map(j=>okDist(palette[i],palette[j])));if(d>bd){bd=d;best=i}}
+    out.push(best);
+  }
+  return out.map(i=>({idx:i,hex:palette[i]}));
+}
+// called from render(): colors picked from the palette follow it, typed ones stay
+function cvSync(){
+  if(cv.auto)cv.sel=cvAutoPick();
+  else{cv.sel=cv.sel.filter(s=>s.idx==null||s.idx<palette.length);cv.sel.forEach(s=>{if(s.idx!=null)s.hex=palette[s.idx]});if(!cv.sel.length)cv.sel=cvAutoPick()}
+  if(cv.tc>=cv.sel.length)cv.tc=-2;
+  if(!cv.L||cv.L.n!==cv.sel.length)cv.L=cvLayout();
+  cvPanel();cvDraw();
+}
+function cvRelayout(){if(cv.tc>=cv.sel.length)cv.tc=-2;cv.L=cvLayout();cvPanel();cvDraw()}
+function cvToggle(i){
+  const k=cv.sel.findIndex(s=>s.idx===i);
+  if(k>=0){if(cv.sel.length<2)return toast('Keep at least one color');cv.sel.splice(k,1)}
+  else{if(cv.sel.length>=4)return toast('Up to 4 colors on the canvas');cv.sel.push({idx:i,hex:palette[i]})}
+  cv.auto=false;cvRelayout();
+}
+function cvMarkChips(){[...cvChips.children].forEach((b,i)=>b.setAttribute('aria-pressed',cv.sel.some(s=>s.idx===i)))}
+function cvPanel(){
+  cvChips.innerHTML='';
+  palette.forEach((hex,i)=>{
+    const b=document.createElement('button');b.type='button';b.className='cv-chip';b.style.background=hex;b.title=hex;
+    b.setAttribute('aria-label',hex+' '+describe(hex).name);b.addEventListener('click',()=>cvToggle(i));cvChips.appendChild(b);
+  });
+  cvMarkChips();
+  cvRows.innerHTML='';
+  cv.sel.forEach((s,k)=>{
+    const row=document.createElement('div');row.className='cv-row';
+    row.innerHTML=`<span class="cv-sw" style="background:${s.hex}"></span><span class="cv-hash">#</span>`+
+      `<input class="cv-hex" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Color ${k+1}, HEX" value="${s.hex.slice(1)}">`+
+      `<button type="button" class="cv-x" aria-label="Remove color ${k+1}" title="Remove">×</button>`;
+    const inp=row.querySelector('.cv-hex'),sw=row.firstChild;
+    const apply=()=>{const v=inp.value.replace(/[^0-9a-f]/gi,'');
+      const hex=v.length===3?'#'+v.split('').map(c=>c+c).join(''):v.length===6?'#'+v:null;if(!hex)return false;
+      if(hex.toUpperCase()===s.hex)return true;
+      s.hex=hex.toUpperCase();s.idx=null;cv.auto=false;sw.style.background=s.hex;cvMarkChips();cvTextChips();cvDraw();return true};
+    inp.addEventListener('input',()=>{if(inp.value.replace(/[^0-9a-f]/gi,'').length===6)apply()});
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!apply())toast('Enter 3 or 6 HEX digits')});
+    inp.addEventListener('blur',()=>{apply();inp.value=s.hex.slice(1)});
+    row.querySelector('.cv-x').addEventListener('click',()=>{
+      if(cv.sel.length<2)return toast('Keep at least one color');cv.sel.splice(k,1);cv.auto=false;cvRelayout()});
+    cvRows.appendChild(row);
+  });
+  cvTextChips();
+}
+function cvTextChips(){
+  cvTC.innerHTML='';
+  [[-2,CV_INK,'Ink'],[-1,CV_PAPER[cv.paper],'Paper'],...cv.sel.map((s,k)=>[k,s.hex,s.hex])].forEach(([v,hex,name])=>{
+    const b=document.createElement('button');b.type='button';b.className='cv-chip sm';b.style.background=hex;b.title='Text · '+name;
+    b.setAttribute('aria-label','Text color '+name);b.setAttribute('aria-pressed',cv.tc===v);
+    b.addEventListener('click',()=>{cv.tc=v;cvTextChips();cvDraw()});cvTC.appendChild(b);
+  });
+}
+function cvSeg(id,attr,after){
+  const el=document.getElementById(id);
+  el.addEventListener('click',e=>{const b=e.target.closest('[data-'+attr+']');if(!b)return;
+    cv[attr==='f'?'format':attr]=b.dataset[attr];el.querySelectorAll('[data-'+attr+']').forEach(x=>x.setAttribute('aria-pressed',x===b));after()});
+}
+cvSeg('cvPaper','paper',()=>{cvTextChips();cvDraw()});
+cvSeg('cvFormat','f',()=>{cv.L=cvLayout();cvDraw()});
+cvSeg('cvPlace','place',cvDraw);
+const cvInkBtn=document.getElementById('cvInk');
+cvInkBtn.addEventListener('click',()=>{cv.ink=!cv.ink;cvInkBtn.setAttribute('aria-pressed',cv.ink);cv.L=cvLayout();cvDraw()});
+document.getElementById('cvText').addEventListener('input',e=>{cv.text=e.target.value;cvDraw()});
+document.getElementById('cvShuffle').addEventListener('click',()=>{cv.seed=Math.floor(Math.random()*1e9);cv.L=cvLayout();cvDraw()});
+document.getElementById('cvCopy').addEventListener('click',()=>copy(cv.svg,'Canvas SVG copied. Paste into Figma with Cmd+V'));
+// fonts beyond Syne and Space Mono load from Google Fonts only when picked
+const cvFontsReady=new Set(['Syne','Space Mono']);
+CV_FONTS.forEach(([fam],i)=>{const o=document.createElement('option');o.value=i;o.textContent=fam;cvFontSel.appendChild(o)});
+cvFontSel.addEventListener('change',()=>{
+  cv.font=+cvFontSel.value;const[fam,wt,q]=CV_FONTS[cv.font];
+  if(!cvFontsReady.has(fam)){cvFontsReady.add(fam);
+    const l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family='+q+'&display=swap';
+    l.onload=()=>document.fonts.load(`${wt} 100px "${fam}"`).then(cvDraw,cvDraw);document.head.appendChild(l)}
+  cvDraw();
+});
+document.fonts.ready.then(cvDraw);
 
 // show focus rings only after the keyboard is used
 addEventListener('keydown',e=>{if(e.key==='Tab')document.body.classList.add('kbd')});

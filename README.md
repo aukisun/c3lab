@@ -29,6 +29,8 @@ By nuforms lab.
 
 **Colour weight.** Below the palette, floating circles show how much of the photo each colour covers.
 
+**Canvas.** See the colours at work, not just side by side. Pick two to four colours from the palette (or type any HEX) and C³ lays them out as a simple Bauhaus-style poster: circles, half and quarter discs, arches, capsules and diagonals on cream or white paper, with black as an optional neutral. Switch the format (poster 3:4, square, story 9:16, banner 16:9), add a line of text in one of nine free fonts and colour it with any of the chosen colours. *Shuffle* draws a new composition; editing a colour keeps the same one, so you compare colours on the same layout. *Copy SVG* pastes the poster into Figma.
+
 **Export.** *Copy SVG* (paste straight onto a Figma canvas — every capsule becomes a named layer), *Copy CSS* (custom properties), *Copy JSON*.
 
 **Small things.** Click a colour to copy its HEX. Double-click a colour to make it the new base. Light and dark themes. Names for every colour, plus the Pantone name when a colour is a close match to a Pantone Colour of the Year.
