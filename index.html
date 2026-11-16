@@ -244,33 +244,33 @@ body.canvas-view .panels,body.canvas-view .stage,body.canvas-view .foot,body.can
 .cv-art{min-width:0;display:flex;justify-content:center}
 .cv-art svg{display:block;max-width:100%;height:auto;box-shadow:0 30px 60px -30px rgba(20,8,0,.5)}
 .cv-panel{display:flex;flex-direction:column;gap:24px;min-width:0}
-.cv-group{display:flex;flex-direction:column;gap:10px}
+.cv-group{display:flex;flex-direction:column;gap:8px}
 .cv-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-.cv-chips{display:flex;flex-wrap:wrap;gap:9px}
-.cv-chip{width:28px;height:28px;border-radius:50%;padding:0;cursor:pointer;border:1px solid color-mix(in srgb,var(--ink) 16%,transparent);transition:box-shadow .2s}
-.cv-chip.sm{width:22px;height:22px}
-.cv-chip[aria-pressed="true"]{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--ink)}
-.cv-rows{display:flex;flex-direction:column;gap:6px}
+/* a color slot: swatch, name, HEX you can type, and a list of the palette colors */
+.cv-slot{position:relative}
 .cv-row{display:flex;align-items:center;gap:4px;border:1px solid var(--line);background:var(--field);border-radius:999px;padding:5px 4px 5px 6px}
-.cv-sw{width:24px;height:24px;border-radius:50%;flex:none;border:1px solid rgba(0,0,0,.12)}
-.cv-hash{color:var(--muted);font-size:14px;margin-left:8px}
+.cv-sw{width:24px;height:24px;border-radius:50%;flex:none;border:1px solid color-mix(in srgb,var(--ink) 22%,transparent)}
+.cv-name{flex:none;width:88px;margin-left:8px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.cv-hash{color:var(--muted);font-size:14px}
 .cv-hex{flex:1;min-width:0;font-family:var(--mono);font-size:14px;letter-spacing:.08em;text-transform:uppercase;border:0;background:transparent;color:var(--ink);outline:none}
-.cv-x{border:0;background:none;color:var(--muted);cursor:pointer;font:inherit;font-size:18px;line-height:1;padding:2px 10px}
-.cv-x:hover{color:var(--ink)}
+.cv-open{flex:none;border:0;background:none;color:var(--muted);cursor:pointer;font:inherit;font-size:13px;line-height:1;padding:6px 12px}
+.cv-open:hover,.cv-open[aria-expanded="true"]{color:var(--ink)}
+.cv-menu{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:20;display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:6px;
+  background:var(--field);border:1px solid var(--line);border-radius:18px;box-shadow:0 20px 40px -20px rgba(20,8,0,.45)}
+.cv-opt{display:flex;align-items:center;gap:8px;min-width:0;border:0;background:none;color:var(--ink);font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-align:left;padding:6px 8px;border-radius:999px;cursor:pointer}
+.cv-opt:hover,.cv-opt[aria-selected="true"]{background:color-mix(in srgb,var(--ink) 9%,transparent)}
+.cv-opt i{width:18px;height:18px;border-radius:50%;flex:none;border:1px solid color-mix(in srgb,var(--ink) 22%,transparent)}
 .cv-seg{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .cv-seg button{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:6px 12px;cursor:pointer;transition:background-color .2s,color .2s}
 .cv-seg button:hover{color:var(--ink)}
 .cv-seg button[aria-pressed="true"]{background:var(--btn);border-color:var(--btn);color:var(--btn-ink)}
-.cv-seg .gap{width:10px}
 .cv-field{width:100%;font-family:var(--mono);font-size:14px;border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:999px;padding:10px 16px;outline:none}
 .cv-field::placeholder{color:var(--muted)}
 .cv-select{position:relative}
 .cv-select select{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:38px}
 .cv-select::after{content:'▾';position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
 select:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
-.cv-actions{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
-.cv-link{font:inherit;font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:none;border:0;color:var(--muted);cursor:pointer;padding:0}
-.cv-link:hover{color:var(--ink)}
+.cv-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 
 @media (max-width:640px){
   .modes{margin-top:36px}
@@ -354,45 +354,33 @@ select:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
         <span class="cv-label">Style</span>
         <div class="cv-seg" id="cvStyle">
           <button type="button" data-style="circular" aria-pressed="true" title="Capsules, circles and dots">Circular</button>
-          <button type="button" data-style="construct" aria-pressed="false" title="A diagonal, a sun, bars and a rule">Construct</button>
+          <button type="button" data-style="construct" aria-pressed="false" title="A band, a half sun, a diagonal, a bar and a rule">Construct</button>
         </div>
       </div>
       <div class="cv-group">
-        <span class="cv-label" id="cvPickLabel">Colors · pick 2–4 from the palette</span>
-        <div class="cv-chips" id="cvChips" role="group" aria-labelledby="cvPickLabel"></div>
-        <div class="cv-rows" id="cvRows"></div>
-      </div>
-      <div class="cv-group">
-        <span class="cv-label">Paper · ink</span>
-        <div class="cv-seg" id="cvPaper">
-          <button type="button" data-paper="cream" aria-pressed="true">Cream</button>
-          <button type="button" data-paper="white" aria-pressed="false">White</button>
-          <span class="gap" aria-hidden="true"></span>
-          <button type="button" id="cvInk" aria-pressed="true" title="Use black as a neutral">Ink</button>
-        </div>
-      </div>
-      <div class="cv-group">
-        <span class="cv-label">Format</span>
-        <div class="cv-seg" id="cvFormat">
-          <button type="button" data-f="3:4" aria-pressed="true">Poster 3:4</button>
-          <button type="button" data-f="1:1" aria-pressed="false">Square</button>
-          <button type="button" data-f="9:16" aria-pressed="false">Story 9:16</button>
-          <button type="button" data-f="16:9" aria-pressed="false">Banner 16:9</button>
-        </div>
+        <span class="cv-label">Colors</span>
+        <div class="cv-slot" data-slot="0"></div>
+        <div class="cv-slot" data-slot="1"></div>
+        <div class="cv-slot" data-slot="2"></div>
       </div>
       <div class="cv-group">
         <label class="cv-label" for="cvText">Text</label>
         <input class="cv-field" id="cvText" maxlength="48" placeholder="Brand name or slogan" autocomplete="off" spellcheck="false">
         <div class="cv-select"><select class="cv-field" id="cvFont" aria-label="Font"></select></div>
-        <div class="cv-chips" id="cvTextColor" role="group" aria-label="Text color"></div>
-        <div class="cv-seg" id="cvPlace">
-          <button type="button" data-place="band" aria-pressed="true" title="Text on a strip of paper under the shapes">On paper</button>
+        <div class="cv-slot" data-slot="3"></div>
+        <div class="cv-seg" id="cvAlign" role="group" aria-label="Text alignment">
+          <button type="button" data-align="start" aria-pressed="true">Left</button>
+          <button type="button" data-align="middle" aria-pressed="false">Center</button>
+          <button type="button" data-align="end" aria-pressed="false">Right</button>
+        </div>
+        <div class="cv-seg" id="cvPlace" role="group" aria-label="Text position">
+          <button type="button" data-place="band" aria-pressed="true" title="Text on a strip of background under the shapes">On paper</button>
           <button type="button" data-place="over" aria-pressed="false" title="Text over the shapes">Over shapes</button>
         </div>
       </div>
       <div class="cv-actions">
-        <button class="go" id="cvShuffle" type="button">Shuffle</button>
-        <button class="cv-link" id="cvCopy" type="button">Copy SVG</button>
+        <button class="go" id="cvCopySvg" type="button" title="Vector · pastes into Figma as layers">Copy SVG</button>
+        <button class="go" id="cvCopyPng" type="button" title="Picture · 2400×3200">Copy PNG</button>
       </div>
     </div>
   </div>
@@ -946,259 +934,170 @@ document.getElementById('copySvg').addEventListener('click',()=>{
   copy(svg,'SVG copied. Paste into Figma with Cmd+V');
 });
 
-/* ---------- canvas: a Bauhaus test sheet — up to 4 chosen colors at work on paper ---------- */
-// Two styles: Circular (capsules, circles and dots on a square module) and Construct (a band, a sun, a diagonal,
-// a bar and a rule). A layout depends only on the seed, style, format, number of colors and ink,
-// so editing a HEX, switching paper or typing text recolors the same poster. Shuffle draws a new one.
-const CV_MOD={'3:4':[4,5],'1:1':[4,4],'9:16':[4,7],'16:9':[7,4]};    // Circular: square cells
-const CV_PAPER={cream:'#F3EDE2',white:'#FFFFFF'},CV_INK='#1D1B1A';
+/* ---------- canvas: a Bauhaus poster of your colors — background, Form 1, Form 2 and text ---------- */
+// Two fixed compositions, Circular and Construct, on a 3:4 sheet (1200×1600). Form 1 carries the big forms,
+// Form 2 the accents. Colors picked from the palette follow it when the base or harmony changes; typed ones stay.
+const CV_W=1200,CV_H=1600,CV_M=72,CV_WHITE='#FFFFFF',CV_BLACK='#1D1B1A';
+const CV_SLOTS=['Background','Form 1','Form 2','Text color'];
 const CV_FONTS=[   // [family, weight, Google Fonts query — null when the page already loads it]
   ['Syne',800,null],['Inter',800,'Inter:wght@800'],['Space Grotesk',700,'Space+Grotesk:wght@700'],
   ['Archivo Black',400,'Archivo+Black'],['Bebas Neue',400,'Bebas+Neue'],['Unbounded',700,'Unbounded:wght@700'],
   ['DM Serif Display',400,'DM+Serif+Display'],['Playfair Display',800,'Playfair+Display:wght@800'],['Space Mono',700,null]];
-const cv={sel:[],auto:true,style:'circular',paper:'cream',ink:true,format:'3:4',seed:11,text:'',font:0,tc:-2,place:'band',L:null,svg:''};
-const cvArt=document.getElementById('cvArt'),cvChips=document.getElementById('cvChips'),
-  cvRows=document.getElementById('cvRows'),cvTC=document.getElementById('cvTextColor'),cvFontSel=document.getElementById('cvFont');
+// Circular: a 4×5 module of square cells. f = form color (1 or 2); acc = color of a dot, eye or hole (0 = background)
+const CV_CIRCULAR=[
+  {t:'pill',c:0,r:0,w:2,h:1,f:2},
+  {t:'disc',c:2,r:0,w:2,h:2,f:1},
+  {t:'disc',c:0,r:1,w:2,h:2,f:1,acc:2},           // with an eye
+  {t:'hole',c:2,r:2,w:1,h:1,f:2,acc:0},
+  {t:'pill',c:3,r:2,w:1,h:2,f:1,acc:2,ends:[0]},  // a dot at the top
+  {t:'pill',c:0,r:3,w:1,h:2,f:2},
+  {t:'quarter',c:1,r:3,w:1,h:1,f:1,dir:1},        // out of the top-right corner
+  {t:'dot',c:2,r:3,w:1,h:1,f:1},
+  {t:'pill',c:1,r:4,w:3,h:1,f:2,acc:0,ends:[1]}]; // a hole at the right end
+// Construct: positions are fractions of the art area — x of its width, y of its height, sizes of its width
+const CV_CONSTRUCT=[
+  {t:'rect',n:'Band',x1:0,y1:0,x2:1,y2:.3,f:1},
+  {t:'disc',n:'Dot',x:.16,y:.15,r:.11,f:2},
+  {t:'rect',n:'Rule',x1:0,y1:.335,x2:1,y2:.345,f:2},
+  {t:'disc',n:'Half sun',x:.33,y:1,r:.33,f:1},
+  {t:'poly',n:'Diagonal',pts:[[.54,0],[.75,0],[.43,1],[.22,1]],f:2},
+  {t:'rect',n:'Bar',x1:.77,y1:.41,x2:1,y2:1,f:1},
+  {t:'disc',n:'Bar dot',x:.885,y:.51,r:.08,f:2},
+  {t:'square',n:'Square',x:0,y:.41,s:.175,f:2}];
+// slots: [background, form 1, form 2, text color]; src = palette index (follows the palette), 'white', 'black' or null (typed)
+const cv={style:'circular',slots:[],auto:true,text:'',font:0,align:'start',place:'band',svg:'',art:'',tx:null};
+const cvArt=document.getElementById('cvArt'),cvFontSel=document.getElementById('cvFont'),cvSlotEls=[...document.querySelectorAll('.cv-slot')];
 const cvN=v=>Math.round(v*10)/10;
 const cvEsc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
-function cvRng(seed){let a=seed>>>0;return()=>{a=a+0x6D2B79F5>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
-function cvPick(R,items){let s=0;items.forEach(i=>s+=i[1]);let r=R()*s;for(const i of items){if((r-=i[1])<0)return i[0]}return items[items.length-1][0]}
-// color roles inside a layout: -1 paper, -2 ink, 0..3 the chosen colors; weights say how often each one is drawn
-function cvRoles(n,{paper=0,ink=1,colors=3}={}){const a=[];if(paper)a.push([-1,paper]);if(cv.ink&&ink)a.push([-2,ink]);for(let i=0;i<n;i++)a.push([i,colors/n]);return a}
-// a shape whose color is nearly its ground's would vanish: swap in the most contrasting color on the sheet
-function cvPair(bg,fg){
-  if(okDist(bg,fg)>=.06)return fg;
-  return[...(cv.ink?[CV_INK]:[]),CV_PAPER[cv.paper],...cv.sel.map(s=>s.hex)].reduce((b,h)=>okDist(bg,h)>okDist(bg,b)?h:b);
+
+// first look: the lightest palette color as background, the base as Form 1, its strongest partner as Form 2
+function cvDefaults(){
+  const o=palette.map(h=>hexToOklch(h)),idx=palette.map((_,i)=>i);
+  const bg=idx.reduce((a,i)=>o[i].L>o[a].L?i:a,0);
+  const rest=idx.filter(i=>i!==bg&&okDist(palette[i],palette[bg])>.08);
+  const f1=rest.includes(baseIndex)?baseIndex:rest.length?rest[0]:bg;
+  // Form 2 stands apart from both Form 1 and the background; a harmony's near-black ink slot is skipped, a photo's real dark is not
+  const lo=harmony==='photo'?0:.25,far=i=>Math.min(okDist(palette[i],palette[f1]),okDist(palette[i],palette[bg]));
+  let cand=rest.filter(i=>i!==f1&&o[i].L>lo&&o[i].L<.9);if(!cand.length)cand=rest.filter(i=>i!==f1);
+  const f2=cand.reduce((a,i)=>a<0||far(i)>far(a)?i:a,-1);
+  const s=i=>({src:i,hex:palette[i]});
+  return[s(bg),s(f1),f2>=0?s(f2):{src:'black',hex:CV_BLACK},o[bg].L<.5?{src:'white',hex:CV_WHITE}:{src:'black',hex:CV_BLACK}];
+}
+// called from render(): palette colors follow the palette, typed ones stay
+function cvSync(){
+  if(cv.auto)cv.slots=cvDefaults();
+  else cv.slots.forEach(s=>{if(typeof s.src==='number'&&s.src<palette.length)s.hex=palette[s.src]});
+  cvPaint();cvDraw();
 }
 
-function cvLayout(){
-  const R=cvRng(cv.seed),n=cv.sel.length;
-  const L=cv.style==='construct'?cvConstruct(R,n):cvCircular(R,n);
-  L.frame=cv.style==='circular'||R()<.7;L.n=n;   // Construct is sometimes full-bleed, its forms cut by the edge
-  return L;
-}
-
-/* Circular: tile a square module with capsules (2–3 cells, some with dots at the ends), big discs (some with an eye),
-   dots, squares with a hole, quarter discs and a little air */
-function cvCircular(R,n){
-  const[cols,rows]=CV_MOD[cv.format],used=[...Array(rows)].map(()=>Array(cols).fill(false));
-  const free=(c,r,w,h)=>{if(c+w>cols||r+h>rows)return false;for(let y=r;y<r+h;y++)for(let x=c;x<c+w;x++)if(used[y][x])return false;return true};
-  const items=[],main=cvRoles(n,{ink:1.4,colors:3.2});
-  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
-    if(used[r][c])continue;
-    const opts=[[['dot',1,1],1.4],[['hole',1,1],.7],[['quarter',1,1],.8],[['none',1,1],1.1]];
-    if(free(c,r,2,2))opts.push([['disc',2,2],2.4]);
-    for(const l of[2,3]){if(free(c,r,l,1))opts.push([['pill',l,1],l===2?1.9:1.6]);if(free(c,r,1,l))opts.push([['pill',1,l],l===2?1.9:1.6])}
-    const[t,w,h]=cvPick(R,opts);
-    for(let y=r;y<r+h;y++)for(let x=c;x<c+w;x++)used[y][x]=true;
-    const it={t,c,r,w,h,dir:Math.floor(R()*4),k:R(),role:cvPick(R,main)};
-    it.accOn=t==='hole'||(t==='disc'&&it.k<.45)||(t==='pill'&&it.k<.6);
-    it.acc=cvPick(R,cvRoles(n,{paper:1.6,ink:1,colors:2}).filter(x=>x[0]!==it.role));
-    items.push(it);
-  }
-  // every chosen color shows up at least once
-  const live=items.filter(it=>it.t!=='none');
-  const uses=v=>live.filter(it=>it.role===v||(it.accOn&&it.acc===v)).length;
-  for(let i=0;i<n;i++){
-    if(uses(i))continue;
-    let pool=live.filter(it=>it.role<0||uses(it.role)>1);
-    if(pool.length){const it=pool[Math.floor(R()*pool.length)];it.role=i;if(it.acc===i)it.acc=-1;continue}
-    pool=items.filter(it=>it.t==='none');
-    if(pool.length){const it=pool[Math.floor(R()*pool.length)];Object.assign(it,{t:'dot',role:i,accOn:false});live.push(it);continue}
-    pool=live.filter(it=>it.accOn&&it.role!==i&&(it.acc<0||uses(it.acc)>1));
-    if(pool.length)pool[Math.floor(R()*pool.length)].acc=i;
-  }
-  return{kind:'cells',cols,rows,items};
-}
-
-/* Construct: few big forms and a lot of air — a band, a sun on its edge or a half sun on the floor,
-   a leaning slab, a bar, a thin rule, a dot and a square. Positions are fractions of the art area. */
-function cvConstruct(R,n){
-  const els=[],bs=.24+R()*.14,add=(t,o)=>els.push({t,...o});
-  add('band',{s:bs});
-  if(R()<.45)add('halfsun',{x:.2+R()*.3,r:.3+R()*.12});else add('sun',{x:.2+R()*.3,y:bs,r:.2+R()*.1});
-  if(R()<.85)add('slab',{x:.45+R()*.2,w:.1+R()*.07,lean:(R()<.5?-1:1)*(.16+R()*.2)});
-  if(R()<.75)add('bar',{w:.16+R()*.08,h:.34+R()*.28});
-  if(R()<.7)add('rule',{y:bs+.03+R()*.05});
-  if(R()<.8)add('dot',{x:.72+R()*.16,y:bs*.5,r:.05+R()*.04});
-  if(R()<.45)add('sq',{x:.06+R()*.08,y:bs+.12+R()*.1,s:.09+R()*.05});
-  while(els.filter(e=>e.t!=='rule').length<n)add('sq',{x:.08+R()*.6,y:.55+R()*.3,s:.08+R()*.05});
-  // colors go to the big forms first, in a seeded order; the rest get ink or a color, never the color they sit on
-  const big=els.filter(e=>e.t!=='rule');
-  for(let i=big.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[big[i],big[j]]=[big[j],big[i]]}
-  big.slice(0,n).forEach((e,i)=>e.role=i);
-  const touches={band:['sun','slab','dot','rule'],sun:['band','slab'],halfsun:['slab','bar'],slab:['band','sun','halfsun','bar','rule'],
-    bar:['slab','halfsun','rule'],rule:['band','slab','bar'],dot:['band'],sq:['rule']};
-  els.forEach(e=>{
-    if(e.role!=null)return;
-    const taken=new Set(els.filter(o=>touches[e.t].includes(o.t)&&o.role!=null).map(o=>o.role));
-    const cand=[...(cv.ink?[-2]:[]),...Array.from({length:n},(_,i)=>i)].filter(v=>!taken.has(v));
-    e.role=e.t==='rule'&&cv.ink&&!taken.has(-2)?-2:cand.length?cand[Math.floor(R()*cand.length)]:-1;
-  });
-  return{kind:'free',els,fx:R()<.5,fy:R()<.5};
-}
-
-function cvDrawCells(L,A,col){
-  const u=Math.min(A.w/L.cols,A.h/L.rows),ox=A.x+(A.w-u*L.cols)/2,oy=A.y+(A.h-u*L.rows)/2,g=u*.06,N=cvN;
+function cvCircular(A,col){
+  const u=Math.min(A.w/4,A.h/5),ox=A.x+(A.w-4*u)/2,oy=A.y+(A.h-5*u)/2,g=u*.06,N=cvN;
   const disc=(cx,cy,r,f)=>`<circle cx="${N(cx)}" cy="${N(cy)}" r="${N(r)}" fill="${f}"/>`;
-  let art='';
-  L.items.forEach((it,i)=>{
-    if(it.t==='none')return;
-    const x=ox+it.c*u,y=oy+it.r*u,w=it.w*u,h=it.h*u,f=col(it.role),a=cvPair(f,col(it.acc));let s='';
+  let out='';
+  CV_CIRCULAR.forEach((it,i)=>{
+    const x=ox+it.c*u,y=oy+it.r*u,w=it.w*u,h=it.h*u,f=col(it.f),a=it.acc!=null?col(it.acc):null;let s='';
     switch(it.t){
-      case 'disc':s=disc(x+u,y+u,u-g,f)+(it.accOn?disc(x+u,y+u,u*.42,a):'');break;
+      case 'disc':s=disc(x+u,y+u,u-g,f)+(a?disc(x+u,y+u,u*.42,a):'');break;
       case 'dot':s=disc(x+u/2,y+u/2,u/2-g,f);break;
       case 'hole':s=`<rect x="${N(x+g)}" y="${N(y+g)}" width="${N(u-2*g)}" height="${N(u-2*g)}" fill="${f}"/>`+disc(x+u/2,y+u/2,u*.27,a);break;
       case 'quarter':{const sx=it.dir&1?-1:1,sy=it.dir&2?-1:1,R=u-2*g,ax=x+g+(sx<0?R:0),ay=y+g+(sy<0?R:0);
         s=`<path d="M${N(ax)},${N(ay)}L${N(ax+sx*R)},${N(ay)}A${N(R)},${N(R)} 0 0 ${sx*sy>0?1:0} ${N(ax)},${N(ay+sy*R)}Z" fill="${f}"/>`;break}
       case 'pill':{const pw=w-2*g,ph=h-2*g,r=Math.min(pw,ph)/2,hor=it.w>it.h;
         s=`<rect x="${N(x+g)}" y="${N(y+g)}" width="${N(pw)}" height="${N(ph)}" rx="${N(r)}" fill="${f}"/>`;
-        if(it.accOn)(it.k<.3?[0,1]:[it.dir&1]).forEach(e=>{
-          s+=disc(hor?(e?x+w-u/2:x+u/2):x+u/2,hor?y+u/2:(e?y+h-u/2:y+u/2),r*.62,a)});
+        if(a)it.ends.forEach(e=>{s+=disc(hor?(e?x+w-u/2:x+u/2):x+u/2,hor?y+u/2:(e?y+h-u/2:y+u/2),r*.62,a)});
         break}
     }
-    art+=`<g id="Shape ${i+1}">${s}</g>`;
+    out+=`<g id="Shape ${i+1}">${s}</g>`;
   });
-  return{defs:'',art:`<g id="Shapes">${art}</g>`};
+  return{defs:'',shapes:`<g id="Shapes">${out}</g>`};
 }
-
-const CV_NAMES={band:'Band',sun:'Sun',halfsun:'Half sun',slab:'Diagonal',bar:'Bar',rule:'Rule',dot:'Dot',sq:'Square'};
-function cvDrawFree(L,A,col,cid){
-  const S=Math.min(A.w,A.h),N=cvN,X=v=>A.x+(L.fx?1-v:v)*A.w,Y=v=>A.y+(L.fy?1-v:v)*A.h;
-  const rect=(x1,y1,x2,y2,f)=>{const a=X(x1),b=X(x2),c=Y(y1),d=Y(y2);
-    return `<rect x="${N(Math.min(a,b))}" y="${N(Math.min(c,d))}" width="${N(Math.abs(b-a))}" height="${N(Math.abs(d-c))}" fill="${f}"/>`};
-  const disc=(cx,cy,r,f)=>`<circle cx="${N(cx)}" cy="${N(cy)}" r="${N(r)}" fill="${f}"/>`;
-  const band=L.els.find(e=>e.t==='band'),bandHex=col(band?band.role:-1);
-  let art='';
-  L.els.forEach(e=>{
-    const f=e.t==='sun'||e.t==='dot'?cvPair(bandHex,col(e.role)):col(e.role);let s='';
+function cvConstruct(A,col){
+  const N=cvN,X=v=>A.x+v*A.w,Y=v=>A.y+v*A.h;
+  let out='';
+  CV_CONSTRUCT.forEach(e=>{
+    const f=col(e.f);let s='';
     switch(e.t){
-      case 'band':s=rect(0,0,1,e.s,f);break;
-      case 'sun':s=disc(X(e.x),Y(e.y),e.r*S,f);break;
-      case 'halfsun':s=disc(X(e.x),Y(1),e.r*S,f);break;
-      case 'slab':{const p=[[e.x-e.w/2+e.lean/2,0],[e.x+e.w/2+e.lean/2,0],[e.x+e.w/2-e.lean/2,1],[e.x-e.w/2-e.lean/2,1]];
-        s=`<polygon points="${p.map(q=>N(X(q[0]))+','+N(Y(q[1]))).join(' ')}" fill="${f}"/>`;break}
-      case 'bar':s=rect(1-e.w,1-e.h,1,1,f);break;
-      case 'rule':s=rect(0,e.y,1,e.y+Math.max(3,A.h*.008)/A.h,f);break;
-      case 'dot':s=disc(X(e.x),Y(e.y),e.r*S,f);break;
-      case 'sq':s=rect(e.x,e.y,e.x+e.s*S/A.w,e.y+e.s*S/A.h,f);break;
+      case 'rect':s=`<rect x="${N(X(e.x1))}" y="${N(Y(e.y1))}" width="${N((e.x2-e.x1)*A.w)}" height="${N(Math.max(4,(e.y2-e.y1)*A.h))}" fill="${f}"/>`;break;
+      case 'square':s=`<rect x="${N(X(e.x))}" y="${N(Y(e.y))}" width="${N(e.s*A.w)}" height="${N(e.s*A.w)}" fill="${f}"/>`;break;
+      case 'disc':s=`<circle cx="${N(X(e.x))}" cy="${N(Y(e.y))}" r="${N(e.r*A.w)}" fill="${f}"/>`;break;
+      case 'poly':s=`<polygon points="${e.pts.map(q=>N(X(q[0]))+','+N(Y(q[1]))).join(' ')}" fill="${f}"/>`;break;
     }
-    art+=`<g id="${CV_NAMES[e.t]}">${s}</g>`;
+    out+=`<g id="${e.n}">${s}</g>`;
   });
-  return{defs:`<clipPath id="${cid}art"><rect x="${A.x}" y="${A.y}" width="${A.w}" height="${A.h}"/></clipPath>`,
-    art:`<g id="Shapes" clip-path="url(#${cid}art)">${art}</g>`};
+  return{defs:`<clipPath id="cvArtClip"><rect x="${A.x}" y="${A.y}" width="${A.w}" height="${A.h}"/></clipPath>`,
+    shapes:`<g id="Shapes" clip-path="url(#cvArtClip)">${out}</g>`};
 }
 
 const cvCtx=document.createElement('canvas').getContext('2d');
 function cvDraw(){
-  const L=cv.L;if(!L)return;
-  const[a,b]=cv.format.split(':').map(Number),W=1200,H=Math.round(W*b/a),S=Math.min(W,H);
-  const col=v=>v===-1?CV_PAPER[cv.paper]:v===-2?CV_INK:(cv.sel[v]||{hex:CV_INK}).hex;
-  const text=cv.text.trim(),band=!!text&&cv.place==='band';
-  const m=L.frame?Math.round(S*.06):0,pad=Math.round(S*.06),bandH=band?Math.round(S*(W>H?.2:.17)):0;
-  const A={x:m,y:m,w:W-2*m,h:H-2*m-bandH};   // the art area, above the text band
-  const cid='cv'+cv.seed.toString(36)+'-';   // clip ids unique per poster
-  const{defs,art}=(L.kind==='free'?cvDrawFree:cvDrawCells)(L,A,col,cid);
-  let txt='';
+  if(!cv.slots.length)return;
+  const W=CV_W,H=CV_H,m=CV_M,col=v=>cv.slots[v].hex,text=cv.text.trim(),band=!!text&&cv.place==='band';
+  const bandH=band?Math.round(H*.1275):0;   // a strip under the shapes for the text
+  const A={x:m,y:m,w:W-2*m,h:H-2*m-bandH};   // the art area
+  const{defs,shapes}=(cv.style==='construct'?cvConstruct:cvCircular)(A,col);
+  cv.tx=null;let txt='';
   if(text){
     const[fam,wt]=CV_FONTS[cv.font];
     cvCtx.font=`${wt} 100px "${fam}"`;
-    const per=cvCtx.measureText(text).width/100||.6*text.length,left=band?Math.max(m,pad):m+pad,maxW=W-2*left;
-    let fs=band?bandH*.52:S*.15;if(per*fs>maxW)fs=maxW/per;
-    const base=band?H-m-bandH/2+fs*.34:H-m-pad;
-    txt=`<text id="Text" x="${left}" y="${cvN(base)}" font-family="'${cvEsc(fam)}', sans-serif" font-weight="${wt}" font-size="${cvN(fs)}" fill="${col(cv.tc)}">${cvEsc(text)}</text>`;
+    const per=cvCtx.measureText(text).width/100||.6*text.length,left=band?m:m*2,maxW=W-2*left;
+    let fs=band?bandH*.52:W*.15;if(per*fs>maxW)fs=maxW/per;
+    const x=cv.align==='middle'?W/2:cv.align==='end'?W-left:left,y=band?H-m-bandH/2+fs*.34:H-m-72;
+    cv.tx={str:text,fam,wt,fs,x,y,align:cv.align,fill:col(3)};
+    txt=`<text id="Text" x="${cvN(x)}" y="${cvN(y)}" text-anchor="${cv.align}" font-family="'${cvEsc(fam)}', sans-serif" font-weight="${wt}" font-size="${cvN(fs)}" fill="${col(3)}">${cvEsc(text)}</text>`;
   }
-  cv.svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${defs}</defs>`+
-    `<g id="C3 Canvas · ${cv.style} · ${cv.format}"><rect id="Paper" width="${W}" height="${H}" fill="${col(-1)}"/>${art}${txt}</g></svg>`;
+  const head=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${defs?'<defs>'+defs+'</defs>':''}`+
+    `<g id="C3 Canvas · ${cv.style}"><rect id="Background" width="${W}" height="${H}" fill="${col(0)}"/>${shapes}`;
+  cv.art=head+'</g></svg>';     // without text: the PNG draws its text with the loaded web font
+  cv.svg=head+txt+'</g></svg>';
   cvArt.innerHTML=cv.svg;cvSize();
 }
 function cvSize(){
   const svg=cvArt.firstElementChild;if(!svg)return;
-  const W=+svg.getAttribute('width'),H=+svg.getAttribute('height'),avail=cvArt.clientWidth,maxH=Math.min(innerHeight*.8,880);
-  let w=avail,h=avail*H/W;if(h>maxH){h=maxH;w=h*W/H}
+  const avail=cvArt.clientWidth,maxH=Math.min(innerHeight*.8,880);
+  let w=avail,h=avail*CV_H/CV_W;if(h>maxH){h=maxH;w=h*CV_W/CV_H}
   svg.style.width=w+'px';svg.style.height=h+'px';
 }
 addEventListener('resize',()=>{clearTimeout(window.__cv);window.__cv=setTimeout(cvSize,120)});
 
-// which palette colors go on the canvas: the base plus the ones most different from it,
-// skipping paper-like and ink-like colors (paper and ink are already on the sheet)
-function cvAutoPick(){
-  const o=palette.map(h=>hexToOklch(h));
-  let cand=palette.map((_,i)=>i).filter(i=>o[i].L<.92&&o[i].L>.22&&okDist(palette[i],CV_PAPER.cream)>.06);
-  if(cand.length<2)cand=palette.map((_,i)=>i);
-  const out=[cand.includes(baseIndex)?baseIndex:cand[0]];
-  while(out.length<Math.min(3,cand.length)){
-    let best=-1,bd=-1;
-    for(const i of cand){if(out.includes(i))continue;const d=Math.min(...out.map(j=>okDist(palette[i],palette[j])));if(d>bd){bd=d;best=i}}
-    out.push(best);
-  }
-  return out.map(i=>({idx:i,hex:palette[i]}));
-}
-// called from render(): colors picked from the palette follow it, typed ones stay
-function cvSync(){
-  if(cv.auto)cv.sel=cvAutoPick();
-  else{cv.sel=cv.sel.filter(s=>s.idx==null||s.idx<palette.length);cv.sel.forEach(s=>{if(s.idx!=null)s.hex=palette[s.idx]});if(!cv.sel.length)cv.sel=cvAutoPick()}
-  if(cv.tc>=cv.sel.length)cv.tc=-2;
-  if(!cv.L||cv.L.n!==cv.sel.length)cv.L=cvLayout();
-  cvPanel();cvDraw();
-}
-function cvRelayout(){if(cv.tc>=cv.sel.length)cv.tc=-2;cv.L=cvLayout();cvPanel();cvDraw()}
-function cvToggle(i){
-  const k=cv.sel.findIndex(s=>s.idx===i);
-  if(k>=0){if(cv.sel.length<2)return toast('Keep at least one color');cv.sel.splice(k,1)}
-  else{if(cv.sel.length>=4)return toast('Up to 4 colors on the canvas');cv.sel.push({idx:i,hex:palette[i]})}
-  cv.auto=false;cvRelayout();
-}
-function cvMarkChips(){[...cvChips.children].forEach((b,i)=>b.setAttribute('aria-pressed',cv.sel.some(s=>s.idx===i)))}
-function cvPanel(){
-  cvChips.innerHTML='';
-  palette.forEach((hex,i)=>{
-    const b=document.createElement('button');b.type='button';b.className='cv-chip';b.style.background=hex;b.title=hex;
-    b.setAttribute('aria-label',hex+' '+describe(hex).name);b.addEventListener('click',()=>cvToggle(i));cvChips.appendChild(b);
+// color slots: type a HEX, or open the list of palette colors (plus white and black)
+function cvPaint(){cvSlotEls.forEach(el=>{const s=cv.slots[+el.dataset.slot];if(!s)return;
+  el.querySelector('.cv-sw').style.background=s.hex;const inp=el.querySelector('.cv-hex');if(document.activeElement!==inp)inp.value=s.hex.slice(1)})}
+function cvCloseMenus(except){cvSlotEls.forEach(el=>{if(el===except)return;el.querySelector('.cv-menu').hidden=true;el.querySelector('.cv-open').setAttribute('aria-expanded','false')})}
+cvSlotEls.forEach(el=>{
+  const k=+el.dataset.slot,label=CV_SLOTS[k];
+  el.innerHTML=`<div class="cv-row"><span class="cv-sw"></span><span class="cv-name">${label}</span><span class="cv-hash">#</span>`+
+    `<input class="cv-hex" maxlength="7" spellcheck="false" autocomplete="off" aria-label="${label}, HEX">`+
+    `<button type="button" class="cv-open" aria-haspopup="listbox" aria-expanded="false" aria-label="${label} · pick a palette color">▾</button></div>`+
+    `<div class="cv-menu" role="listbox" aria-label="${label}" hidden></div>`;
+  const inp=el.querySelector('.cv-hex'),btn=el.querySelector('.cv-open'),menu=el.querySelector('.cv-menu');
+  const set=(src,hex)=>{cv.auto=false;cv.slots[k]={src,hex:hex.toUpperCase()};cvPaint();cvDraw()};
+  const apply=()=>{const v=inp.value.replace(/[^0-9a-f]/gi,'');
+    const hex=v.length===3?'#'+v.split('').map(c=>c+c).join(''):v.length===6?'#'+v:null;if(!hex)return false;
+    if(hex.toUpperCase()!==cv.slots[k].hex)set(null,hex);return true};
+  inp.addEventListener('input',()=>{if(inp.value.replace(/[^0-9a-f]/gi,'').length===6)apply()});
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!apply())toast('Enter 3 or 6 HEX digits')});
+  inp.addEventListener('blur',()=>{apply();inp.value=cv.slots[k].hex.slice(1)});
+  btn.addEventListener('click',()=>{
+    if(!menu.hidden){cvCloseMenus();return}
+    cvCloseMenus(el);menu.innerHTML='';
+    [...palette.map((h,i)=>[i,h,describe(h).name]),['white',CV_WHITE,'White'],['black',CV_BLACK,'Black']].forEach(([src,hex,name])=>{
+      const b=document.createElement('button');b.type='button';b.className='cv-opt';b.setAttribute('role','option');b.title=name;
+      b.setAttribute('aria-selected',hex===cv.slots[k].hex);b.innerHTML=`<i style="background:${hex}"></i>${hex}`;
+      b.addEventListener('click',()=>{set(src,hex);cvCloseMenus();btn.focus()});menu.appendChild(b);
+    });
+    menu.hidden=false;btn.setAttribute('aria-expanded','true');
   });
-  cvMarkChips();
-  cvRows.innerHTML='';
-  cv.sel.forEach((s,k)=>{
-    const row=document.createElement('div');row.className='cv-row';
-    row.innerHTML=`<span class="cv-sw" style="background:${s.hex}"></span><span class="cv-hash">#</span>`+
-      `<input class="cv-hex" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Color ${k+1}, HEX" value="${s.hex.slice(1)}">`+
-      `<button type="button" class="cv-x" aria-label="Remove color ${k+1}" title="Remove">×</button>`;
-    const inp=row.querySelector('.cv-hex'),sw=row.firstChild;
-    const apply=()=>{const v=inp.value.replace(/[^0-9a-f]/gi,'');
-      const hex=v.length===3?'#'+v.split('').map(c=>c+c).join(''):v.length===6?'#'+v:null;if(!hex)return false;
-      if(hex.toUpperCase()===s.hex)return true;
-      s.hex=hex.toUpperCase();s.idx=null;cv.auto=false;sw.style.background=s.hex;cvMarkChips();cvTextChips();cvDraw();return true};
-    inp.addEventListener('input',()=>{if(inp.value.replace(/[^0-9a-f]/gi,'').length===6)apply()});
-    inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!apply())toast('Enter 3 or 6 HEX digits')});
-    inp.addEventListener('blur',()=>{apply();inp.value=s.hex.slice(1)});
-    row.querySelector('.cv-x').addEventListener('click',()=>{
-      if(cv.sel.length<2)return toast('Keep at least one color');cv.sel.splice(k,1);cv.auto=false;cvRelayout()});
-    cvRows.appendChild(row);
-  });
-  cvTextChips();
-}
-function cvTextChips(){
-  cvTC.innerHTML='';
-  [[-2,CV_INK,'Ink'],[-1,CV_PAPER[cv.paper],'Paper'],...cv.sel.map((s,k)=>[k,s.hex,s.hex])].forEach(([v,hex,name])=>{
-    const b=document.createElement('button');b.type='button';b.className='cv-chip sm';b.style.background=hex;b.title='Text · '+name;
-    b.setAttribute('aria-label','Text color '+name);b.setAttribute('aria-pressed',cv.tc===v);
-    b.addEventListener('click',()=>{cv.tc=v;cvTextChips();cvDraw()});cvTC.appendChild(b);
-  });
-}
-function cvSeg(id,attr,after){
+  el.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menu.hidden){cvCloseMenus();btn.focus()}});
+});
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('.cv-slot'))cvCloseMenus()});
+
+function cvSeg(id,attr){
   const el=document.getElementById(id);
   el.addEventListener('click',e=>{const b=e.target.closest('[data-'+attr+']');if(!b)return;
-    cv[attr==='f'?'format':attr]=b.dataset[attr];el.querySelectorAll('[data-'+attr+']').forEach(x=>x.setAttribute('aria-pressed',x===b));after()});
+    cv[attr]=b.dataset[attr];el.querySelectorAll('[data-'+attr+']').forEach(x=>x.setAttribute('aria-pressed',x===b));cvDraw()});
 }
-cvSeg('cvStyle','style',()=>{cv.L=cvLayout();cvDraw()});
-cvSeg('cvPaper','paper',()=>{cvTextChips();cvDraw()});
-cvSeg('cvFormat','f',()=>{cv.L=cvLayout();cvDraw()});
-cvSeg('cvPlace','place',cvDraw);
-const cvInkBtn=document.getElementById('cvInk');
-cvInkBtn.addEventListener('click',()=>{cv.ink=!cv.ink;cvInkBtn.setAttribute('aria-pressed',cv.ink);cv.L=cvLayout();cvDraw()});
+cvSeg('cvStyle','style');cvSeg('cvAlign','align');cvSeg('cvPlace','place');
 document.getElementById('cvText').addEventListener('input',e=>{cv.text=e.target.value;cvDraw()});
-document.getElementById('cvShuffle').addEventListener('click',()=>{cv.seed=Math.floor(Math.random()*1e9);cv.L=cvLayout();cvDraw()});
-document.getElementById('cvCopy').addEventListener('click',()=>copy(cv.svg,'Canvas SVG copied. Paste into Figma with Cmd+V'));
 // fonts beyond Syne and Space Mono load from Google Fonts only when picked
 const cvFontsReady=new Set(['Syne','Space Mono']);
 CV_FONTS.forEach(([fam],i)=>{const o=document.createElement('option');o.value=i;o.textContent=fam;cvFontSel.appendChild(o)});
@@ -1210,6 +1109,30 @@ cvFontSel.addEventListener('change',()=>{
   cvDraw();
 });
 document.fonts.ready.then(cvDraw);
+
+// export: SVG for Figma (named layers), PNG at 2× (2400×3200) — copied, or saved when the browser can't copy images
+document.getElementById('cvCopySvg').addEventListener('click',()=>copy(cv.svg,'SVG copied · paste into Figma with Cmd+V'));
+async function cvPng(){
+  const art=cv.art,t=cv.tx,k=2,c=document.createElement('canvas');c.width=CV_W*k;c.height=CV_H*k;
+  const img=new Image();img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(art);await img.decode();
+  const x=c.getContext('2d');x.drawImage(img,0,0,c.width,c.height);
+  if(t){
+    await document.fonts.load(`${t.wt} 100px "${t.fam}"`);
+    x.font=`${t.wt} ${t.fs*k}px "${t.fam}", sans-serif`;x.fillStyle=t.fill;
+    x.textAlign=({start:'left',middle:'center',end:'right'})[t.align];x.fillText(t.str,t.x*k,t.y*k);
+  }
+  return new Promise(r=>c.toBlob(r,'image/png'));
+}
+function cvSavePng(blob){
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='c3-canvas.png';a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast('PNG saved · 2400×3200');
+}
+document.getElementById('cvCopyPng').addEventListener('click',()=>{
+  const png=cvPng();
+  if(navigator.clipboard&&window.ClipboardItem)
+    navigator.clipboard.write([new ClipboardItem({'image/png':png})]).then(()=>toast('PNG copied · 2400×3200'),()=>png.then(cvSavePng));
+  else png.then(cvSavePng);
+});
 
 // show focus rings only after the keyboard is used
 addEventListener('keydown',e=>{if(e.key==='Tab')document.body.classList.add('kbd')});
