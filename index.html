@@ -235,10 +235,11 @@ body.kbd .pill:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
 /* Canvas — a Bauhaus test sheet: the chosen colors at work on paper */
-.canvas-lab{width:100%;max-width:1180px;margin:96px auto 0}
-.cv-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:18px}
-.cv-title{margin:0;font-family:var(--display);font-weight:800;font-size:28px;letter-spacing:-.02em;color:var(--brand);transition:color .8s ease}
-.cv-sub{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+/* the Canvas tab is its own page: the input panels, capsules, export row and photo weights step aside */
+body:not(.canvas-view) .canvas-lab,
+body.canvas-view .panels,body.canvas-view .stage,body.canvas-view .foot,body.canvas-view .weights{display:none!important}
+.modes .sep.wide{margin-inline:4px}
+.canvas-lab{width:100%;max-width:1180px;margin:28px auto 0}
 .cv-grid{display:grid;grid-template-columns:minmax(0,40%) minmax(0,340px);justify-content:center;align-items:start;gap:clamp(28px,5vw,72px);margin-top:32px}
 .cv-art{min-width:0;display:flex;justify-content:center}
 .cv-art svg{display:block;max-width:100%;height:auto;box-shadow:0 30px 60px -30px rgba(20,8,0,.5)}
@@ -274,7 +275,6 @@ select:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
 @media (max-width:640px){
   .modes{margin-top:36px}
   .brand-mark{font-size:36px}
-  .canvas-lab{margin-top:64px}
   .cv-grid{grid-template-columns:minmax(0,1fr);gap:28px}
 }
 @media (prefers-reduced-motion:reduce){
@@ -291,12 +291,14 @@ select:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
   <button class="theme-btn" id="themeBtn" type="button">Dark</button>
 </header>
 
-<nav class="modes" role="tablist" aria-label="Choose how to set the base color">
+<nav class="modes" role="tablist" aria-label="Set the base color or open the canvas">
   <button class="mode" role="tab" id="tab-upload" data-mode="upload" aria-selected="false">Upload</button>
   <span class="sep"></span>
   <button class="mode" role="tab" id="tab-code" data-mode="code" aria-selected="true">Code</button>
   <span class="sep"></span>
   <button class="mode" role="tab" id="tab-picker" data-mode="picker" aria-selected="false">Picker</button>
+  <span class="sep wide"></span>
+  <button class="mode" role="tab" id="tab-canvas" data-mode="canvas" aria-selected="false">Canvas</button>
 </nav>
 
 <div class="panels">
@@ -344,14 +346,18 @@ select:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
   <div class="field" id="field"></div>
 </section>
 
-<section class="canvas-lab" id="canvasLab" aria-labelledby="cvTitle">
-  <div class="cv-head">
-    <h2 class="cv-title" id="cvTitle">Canvas</h2>
-    <span class="cv-sub">Your colors at work · simple shapes on paper</span>
-  </div>
+<section class="canvas-lab" id="canvasLab" aria-label="Canvas · your colors at work on a poster">
   <div class="cv-grid">
     <div class="cv-art" id="cvArt" role="img" aria-label="Poster made of the chosen colors"></div>
     <div class="cv-panel">
+      <div class="cv-group">
+        <span class="cv-label">Style</span>
+        <div class="cv-seg" id="cvStyle">
+          <button type="button" data-style="circular" aria-pressed="true" title="Capsules, circles and dots">Circular</button>
+          <button type="button" data-style="construct" aria-pressed="false" title="A diagonal, a sun, bars and a rule">Construct</button>
+          <button type="button" data-style="blocks" aria-pressed="false" title="A grid of blocks, one shape in each">Blocks</button>
+        </div>
+      </div>
       <div class="cv-group">
         <span class="cv-label" id="cvPickLabel">Colors · pick 2–4 from the palette</span>
         <div class="cv-chips" id="cvChips" role="group" aria-labelledby="cvPickLabel"></div>
@@ -732,6 +738,10 @@ function fromBase(hex){
 const tabs=[...document.querySelectorAll('.mode')];
 tabs.forEach(t=>t.addEventListener('click',()=>{
   tabs.forEach(x=>x.setAttribute('aria-selected',x===t?'true':'false'));
+  const canvasView=t.dataset.mode==='canvas';
+  document.body.classList.toggle('canvas-view',canvasView);
+  if(canvasView){cvSize();return}
+  layout();placeOrbs();   // the capsules were hidden while the canvas was open
   ['code','upload','picker'].forEach(m=>document.getElementById('panel-'+m).hidden=m!==t.dataset.mode);
   if(t.dataset.mode==='picker')syncPicker();
 }));
@@ -938,34 +948,49 @@ document.getElementById('copySvg').addEventListener('click',()=>{
 });
 
 /* ---------- canvas: a Bauhaus test sheet — up to 4 chosen colors at work on paper ---------- */
-// The layout (blocks on a grid, one shape per block) depends only on the seed, format, number of colors and ink,
-// so editing a HEX, switching paper or typing text recolors the same poster. Shuffle draws a new one.
-const CV_GRID={'3:4':[3,4],'1:1':[3,3],'9:16':[3,5],'16:9':[5,3]};
+// Three styles: Circular (capsules, circles and dots on a square module), Construct (a band, a sun, a diagonal,
+// a bar and a rule) and Blocks (a grid cut into blocks, one shape in each). A layout depends only on the seed, style,
+// format, number of colors and ink, so editing a HEX, switching paper or typing text recolors the same poster.
+// Shuffle draws a new one.
+const CV_GRID={'3:4':[3,4],'1:1':[3,3],'9:16':[3,5],'16:9':[5,3]};   // Blocks
+const CV_MOD={'3:4':[4,5],'1:1':[4,4],'9:16':[4,7],'16:9':[7,4]};    // Circular: square cells
 const CV_PAPER={cream:'#F3EDE2',white:'#FFFFFF'},CV_INK='#1D1B1A';
 const CV_FONTS=[   // [family, weight, Google Fonts query — null when the page already loads it]
   ['Syne',800,null],['Inter',800,'Inter:wght@800'],['Space Grotesk',700,'Space+Grotesk:wght@700'],
   ['Archivo Black',400,'Archivo+Black'],['Bebas Neue',400,'Bebas+Neue'],['Unbounded',700,'Unbounded:wght@700'],
   ['DM Serif Display',400,'DM+Serif+Display'],['Playfair Display',800,'Playfair+Display:wght@800'],['Space Mono',700,null]];
-// roles inside a layout: -1 paper, -2 ink, 0..3 the chosen colors
-const cv={sel:[],auto:true,paper:'cream',ink:true,format:'3:4',seed:11,text:'',font:0,tc:-2,place:'band',L:null,svg:''};
+const cv={sel:[],auto:true,style:'circular',paper:'cream',ink:true,format:'3:4',seed:11,text:'',font:0,tc:-2,place:'band',L:null,svg:''};
 const cvArt=document.getElementById('cvArt'),cvChips=document.getElementById('cvChips'),
   cvRows=document.getElementById('cvRows'),cvTC=document.getElementById('cvTextColor'),cvFontSel=document.getElementById('cvFont');
 const cvN=v=>Math.round(v*10)/10;
 const cvEsc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
 function cvRng(seed){let a=seed>>>0;return()=>{a=a+0x6D2B79F5>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
 function cvPick(R,items){let s=0;items.forEach(i=>s+=i[1]);let r=R()*s;for(const i of items){if((r-=i[1])<0)return i[0]}return items[items.length-1][0]}
+// color roles inside a layout: -1 paper, -2 ink, 0..3 the chosen colors; weights say how often each one is drawn
+function cvRoles(n,{paper=0,ink=1,colors=3}={}){const a=[];if(paper)a.push([-1,paper]);if(cv.ink&&ink)a.push([-2,ink]);for(let i=0;i<n;i++)a.push([i,colors/n]);return a}
+// a shape whose color is nearly its ground's would vanish: swap in the most contrasting color on the sheet
+function cvPair(bg,fg){
+  if(okDist(bg,fg)>=.06)return fg;
+  return[...(cv.ink?[CV_INK]:[]),CV_PAPER[cv.paper],...cv.sel.map(s=>s.hex)].reduce((b,h)=>okDist(bg,h)>okDist(bg,b)?h:b);
+}
 
 function cvLayout(){
-  const R=cvRng(cv.seed),[cols,rows]=CV_GRID[cv.format],n=cv.sel.length;
-  // cut the grid into blocks: 1×1 up to 2×2, now and then a long 1×3 strip
+  const R=cvRng(cv.seed),n=cv.sel.length;
+  const L=cv.style==='circular'?cvCircular(R,n):cv.style==='construct'?cvConstruct(R,n):cvBlocks(R,n);
+  L.frame=R()<({circular:1,construct:.7,blocks:.6})[cv.style];L.n=n;
+  return L;
+}
+
+/* Blocks: cut the grid into blocks of 1×1 up to 2×2 (now and then a 1×3 strip), one shape per block */
+function cvBlocks(R,n){
+  const[cols,rows]=CV_GRID[cv.format];
   const cut=(c,r,w,h)=>{
     const fits=(w<=2&&h<=2)||w*h===3;
     if((w===1&&h===1)||(fits&&R()<.5))return[{c,r,w,h}];
     if(h===1||(w>1&&R()<w/(w+h))){const k=1+Math.floor(R()*(w-1));return[...cut(c,r,k,h),...cut(c+k,r,w-k,h)]}
     const k=1+Math.floor(R()*(h-1));return[...cut(c,r,w,k),...cut(c,r+k,w,h-k)];
   };
-  const blocks=cut(0,0,cols,rows);
-  const roles=[[-1,2.4]];if(cv.ink)roles.push([-2,1.2]);for(let i=0;i<n;i++)roles.push([i,2.6/n]);
+  const blocks=cut(0,0,cols,rows),roles=cvRoles(n,{paper:2.4,ink:1.2,colors:2.6});
   blocks.forEach(b=>{
     const long=Math.max(b.w,b.h)>=2*Math.min(b.w,b.h);
     b.shape=cvPick(R,long?[['capsule',3],['arch',3],['half',2],['diag',2],['circle',1],['none',1]]
@@ -984,7 +1009,67 @@ function cvLayout(){
     pool=blocks.filter(b=>b.fg!==i&&spare(b.bg));
     if(pool.length)pool[Math.floor(R()*pool.length)].bg=i;
   }
-  return{cols,rows,blocks,frame:R()<.6,n};
+  return{kind:'blocks',cols,rows,blocks};
+}
+
+/* Circular: tile a square module with capsules (2–3 cells, some with dots at the ends), big discs (some with an eye),
+   dots, squares with a hole, quarter discs and a little air */
+function cvCircular(R,n){
+  const[cols,rows]=CV_MOD[cv.format],used=[...Array(rows)].map(()=>Array(cols).fill(false));
+  const free=(c,r,w,h)=>{if(c+w>cols||r+h>rows)return false;for(let y=r;y<r+h;y++)for(let x=c;x<c+w;x++)if(used[y][x])return false;return true};
+  const items=[],main=cvRoles(n,{ink:1.4,colors:3.2});
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    if(used[r][c])continue;
+    const opts=[[['dot',1,1],1.4],[['hole',1,1],.7],[['quarter',1,1],.8],[['none',1,1],1.1]];
+    if(free(c,r,2,2))opts.push([['disc',2,2],2.4]);
+    for(const l of[2,3]){if(free(c,r,l,1))opts.push([['pill',l,1],l===2?1.9:1.6]);if(free(c,r,1,l))opts.push([['pill',1,l],l===2?1.9:1.6])}
+    const[t,w,h]=cvPick(R,opts);
+    for(let y=r;y<r+h;y++)for(let x=c;x<c+w;x++)used[y][x]=true;
+    const it={t,c,r,w,h,dir:Math.floor(R()*4),k:R(),role:cvPick(R,main)};
+    it.accOn=t==='hole'||(t==='disc'&&it.k<.45)||(t==='pill'&&it.k<.6);
+    it.acc=cvPick(R,cvRoles(n,{paper:1.6,ink:1,colors:2}).filter(x=>x[0]!==it.role));
+    items.push(it);
+  }
+  // every chosen color shows up at least once
+  const live=items.filter(it=>it.t!=='none');
+  const uses=v=>live.filter(it=>it.role===v||(it.accOn&&it.acc===v)).length;
+  for(let i=0;i<n;i++){
+    if(uses(i))continue;
+    let pool=live.filter(it=>it.role<0||uses(it.role)>1);
+    if(pool.length){const it=pool[Math.floor(R()*pool.length)];it.role=i;if(it.acc===i)it.acc=-1;continue}
+    pool=items.filter(it=>it.t==='none');
+    if(pool.length){const it=pool[Math.floor(R()*pool.length)];Object.assign(it,{t:'dot',role:i,accOn:false});live.push(it);continue}
+    pool=live.filter(it=>it.accOn&&it.role!==i&&(it.acc<0||uses(it.acc)>1));
+    if(pool.length)pool[Math.floor(R()*pool.length)].acc=i;
+  }
+  return{kind:'cells',cols,rows,items};
+}
+
+/* Construct: few big forms and a lot of air — a band, a sun on its edge or a half sun on the floor,
+   a leaning slab, a bar, a thin rule, a dot and a square. Positions are fractions of the art area. */
+function cvConstruct(R,n){
+  const els=[],bs=.24+R()*.14,add=(t,o)=>els.push({t,...o});
+  add('band',{s:bs});
+  if(R()<.45)add('halfsun',{x:.2+R()*.3,r:.3+R()*.12});else add('sun',{x:.2+R()*.3,y:bs,r:.2+R()*.1});
+  if(R()<.85)add('slab',{x:.45+R()*.2,w:.1+R()*.07,lean:(R()<.5?-1:1)*(.16+R()*.2)});
+  if(R()<.75)add('bar',{w:.16+R()*.08,h:.34+R()*.28});
+  if(R()<.7)add('rule',{y:bs+.03+R()*.05});
+  if(R()<.8)add('dot',{x:.72+R()*.16,y:bs*.5,r:.05+R()*.04});
+  if(R()<.45)add('sq',{x:.06+R()*.08,y:bs+.12+R()*.1,s:.09+R()*.05});
+  while(els.filter(e=>e.t!=='rule').length<n)add('sq',{x:.08+R()*.6,y:.55+R()*.3,s:.08+R()*.05});
+  // colors go to the big forms first, in a seeded order; the rest get ink or a color, never the color they sit on
+  const big=els.filter(e=>e.t!=='rule');
+  for(let i=big.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[big[i],big[j]]=[big[j],big[i]]}
+  big.slice(0,n).forEach((e,i)=>e.role=i);
+  const touches={band:['sun','slab','dot','rule'],sun:['band','slab'],halfsun:['slab','bar'],slab:['band','sun','halfsun','bar','rule'],
+    bar:['slab','halfsun','rule'],rule:['band','slab','bar'],dot:['band'],sq:['rule']};
+  els.forEach(e=>{
+    if(e.role!=null)return;
+    const taken=new Set(els.filter(o=>touches[e.t].includes(o.t)&&o.role!=null).map(o=>o.role));
+    const cand=[...(cv.ink?[-2]:[]),...Array.from({length:n},(_,i)=>i)].filter(v=>!taken.has(v));
+    e.role=e.t==='rule'&&cv.ink&&!taken.has(-2)?-2:cand.length?cand[Math.floor(R()*cand.length)]:-1;
+  });
+  return{kind:'free',els,fx:R()<.5,fy:R()<.5};
 }
 
 function cvShape(b,x,y,w,h,fill){
@@ -1006,6 +1091,73 @@ function cvShape(b,x,y,w,h,fill){
   return '';
 }
 
+function cvDrawBlocks(L,A,col,cid){
+  const cw=A.w/L.cols,ch=A.h/L.rows;let defs='',grounds='',shapes='';
+  L.blocks.forEach((bk,i)=>{
+    const x=Math.round(A.x+bk.c*cw),y=Math.round(A.y+bk.r*ch),w=Math.round(A.x+(bk.c+bk.w)*cw)-x,h=Math.round(A.y+(bk.r+bk.h)*ch)-y;
+    const bg=col(bk.bg);
+    // grounds are pixel-sharp, so neighbours meet without a hairline of paper
+    grounds+=`<rect id="Ground ${i+1}" x="${x}" y="${y}" width="${w}" height="${h}" fill="${bg}" shape-rendering="crispEdges"/>`;
+    if(bk.shape==='none')return;
+    // a shape reaches 3 units past inner edges, so its own ground never shows as a line where it meets the next block
+    const e=3,l=bk.c?e:0,t=bk.r?e:0,rr=bk.c+bk.w<L.cols?e:0,bb=bk.r+bk.h<L.rows?e:0;
+    defs+=`<clipPath id="${cid}${i}"><rect x="${x-l}" y="${y-t}" width="${w+l+rr}" height="${h+t+bb}"/></clipPath>`;
+    shapes+=`<g id="Shape ${i+1}" clip-path="url(#${cid}${i})">${cvShape(bk,x,y,w,h,cvPair(bg,col(bk.fg)))}</g>`;
+  });
+  return{defs,art:`<g id="Grounds">${grounds}</g><g id="Shapes">${shapes}</g>`};
+}
+
+function cvDrawCells(L,A,col){
+  const u=Math.min(A.w/L.cols,A.h/L.rows),ox=A.x+(A.w-u*L.cols)/2,oy=A.y+(A.h-u*L.rows)/2,g=u*.06,N=cvN;
+  const disc=(cx,cy,r,f)=>`<circle cx="${N(cx)}" cy="${N(cy)}" r="${N(r)}" fill="${f}"/>`;
+  let art='';
+  L.items.forEach((it,i)=>{
+    if(it.t==='none')return;
+    const x=ox+it.c*u,y=oy+it.r*u,w=it.w*u,h=it.h*u,f=col(it.role),a=cvPair(f,col(it.acc));let s='';
+    switch(it.t){
+      case 'disc':s=disc(x+u,y+u,u-g,f)+(it.accOn?disc(x+u,y+u,u*.42,a):'');break;
+      case 'dot':s=disc(x+u/2,y+u/2,u/2-g,f);break;
+      case 'hole':s=`<rect x="${N(x+g)}" y="${N(y+g)}" width="${N(u-2*g)}" height="${N(u-2*g)}" fill="${f}"/>`+disc(x+u/2,y+u/2,u*.27,a);break;
+      case 'quarter':{const sx=it.dir&1?-1:1,sy=it.dir&2?-1:1,R=u-2*g,ax=x+g+(sx<0?R:0),ay=y+g+(sy<0?R:0);
+        s=`<path d="M${N(ax)},${N(ay)}L${N(ax+sx*R)},${N(ay)}A${N(R)},${N(R)} 0 0 ${sx*sy>0?1:0} ${N(ax)},${N(ay+sy*R)}Z" fill="${f}"/>`;break}
+      case 'pill':{const pw=w-2*g,ph=h-2*g,r=Math.min(pw,ph)/2,hor=it.w>it.h;
+        s=`<rect x="${N(x+g)}" y="${N(y+g)}" width="${N(pw)}" height="${N(ph)}" rx="${N(r)}" fill="${f}"/>`;
+        if(it.accOn)(it.k<.3?[0,1]:[it.dir&1]).forEach(e=>{
+          s+=disc(hor?(e?x+w-u/2:x+u/2):x+u/2,hor?y+u/2:(e?y+h-u/2:y+u/2),r*.62,a)});
+        break}
+    }
+    art+=`<g id="Shape ${i+1}">${s}</g>`;
+  });
+  return{defs:'',art:`<g id="Shapes">${art}</g>`};
+}
+
+const CV_NAMES={band:'Band',sun:'Sun',halfsun:'Half sun',slab:'Diagonal',bar:'Bar',rule:'Rule',dot:'Dot',sq:'Square'};
+function cvDrawFree(L,A,col,cid){
+  const S=Math.min(A.w,A.h),N=cvN,X=v=>A.x+(L.fx?1-v:v)*A.w,Y=v=>A.y+(L.fy?1-v:v)*A.h;
+  const rect=(x1,y1,x2,y2,f)=>{const a=X(x1),b=X(x2),c=Y(y1),d=Y(y2);
+    return `<rect x="${N(Math.min(a,b))}" y="${N(Math.min(c,d))}" width="${N(Math.abs(b-a))}" height="${N(Math.abs(d-c))}" fill="${f}"/>`};
+  const disc=(cx,cy,r,f)=>`<circle cx="${N(cx)}" cy="${N(cy)}" r="${N(r)}" fill="${f}"/>`;
+  const band=L.els.find(e=>e.t==='band'),bandHex=col(band?band.role:-1);
+  let art='';
+  L.els.forEach(e=>{
+    const f=e.t==='sun'||e.t==='dot'?cvPair(bandHex,col(e.role)):col(e.role);let s='';
+    switch(e.t){
+      case 'band':s=rect(0,0,1,e.s,f);break;
+      case 'sun':s=disc(X(e.x),Y(e.y),e.r*S,f);break;
+      case 'halfsun':s=disc(X(e.x),Y(1),e.r*S,f);break;
+      case 'slab':{const p=[[e.x-e.w/2+e.lean/2,0],[e.x+e.w/2+e.lean/2,0],[e.x+e.w/2-e.lean/2,1],[e.x-e.w/2-e.lean/2,1]];
+        s=`<polygon points="${p.map(q=>N(X(q[0]))+','+N(Y(q[1]))).join(' ')}" fill="${f}"/>`;break}
+      case 'bar':s=rect(1-e.w,1-e.h,1,1,f);break;
+      case 'rule':s=rect(0,e.y,1,e.y+Math.max(3,A.h*.008)/A.h,f);break;
+      case 'dot':s=disc(X(e.x),Y(e.y),e.r*S,f);break;
+      case 'sq':s=rect(e.x,e.y,e.x+e.s*S/A.w,e.y+e.s*S/A.h,f);break;
+    }
+    art+=`<g id="${CV_NAMES[e.t]}">${s}</g>`;
+  });
+  return{defs:`<clipPath id="${cid}art"><rect x="${A.x}" y="${A.y}" width="${A.w}" height="${A.h}"/></clipPath>`,
+    art:`<g id="Shapes" clip-path="url(#${cid}art)">${art}</g>`};
+}
+
 const cvCtx=document.createElement('canvas').getContext('2d');
 function cvDraw(){
   const L=cv.L;if(!L)return;
@@ -1013,17 +1165,9 @@ function cvDraw(){
   const col=v=>v===-1?CV_PAPER[cv.paper]:v===-2?CV_INK:(cv.sel[v]||{hex:CV_INK}).hex;
   const text=cv.text.trim(),band=!!text&&cv.place==='band';
   const m=L.frame?Math.round(S*.06):0,pad=Math.round(S*.06),bandH=band?Math.round(S*(W>H?.2:.17)):0;
-  const cw=(W-2*m)/L.cols,ch=(H-2*m-bandH)/L.rows;
-  let defs='',grounds='',shapes='';const cid='cv'+cv.seed.toString(36)+'-';   // clip ids unique per poster
-  L.blocks.forEach((bk,i)=>{
-    const x=Math.round(m+bk.c*cw),y=Math.round(m+bk.r*ch),w=Math.round(m+(bk.c+bk.w)*cw)-x,h=Math.round(m+(bk.r+bk.h)*ch)-y;
-    // block edges are drawn pixel-sharp (crispEdges), so neighbours meet without a hairline of paper or ground
-    grounds+=`<rect id="Ground ${i+1}" x="${x}" y="${y}" width="${w}" height="${h}" fill="${col(bk.bg)}" shape-rendering="crispEdges"/>`;
-    if(bk.shape==='none')return;
-    defs+=`<clipPath id="${cid}${i}"><rect x="${x}" y="${y}" width="${w}" height="${h}" shape-rendering="crispEdges"/></clipPath>`;
-    shapes+=`<g id="Shape ${i+1}" clip-path="url(#${cid}${i})">${cvShape(bk,x,y,w,h,col(bk.fg))}</g>`;
-  });
-  const art=`<g id="Grounds">${grounds}</g><g id="Shapes">${shapes}</g>`;
+  const A={x:m,y:m,w:W-2*m,h:H-2*m-bandH};   // the art area, above the text band
+  const cid='cv'+cv.seed.toString(36)+'-';   // clip ids unique per poster
+  const{defs,art}=(L.kind==='cells'?cvDrawCells:L.kind==='free'?cvDrawFree:cvDrawBlocks)(L,A,col,cid);
   let txt='';
   if(text){
     const[fam,wt]=CV_FONTS[cv.font];
@@ -1034,7 +1178,7 @@ function cvDraw(){
     txt=`<text id="Text" x="${left}" y="${cvN(base)}" font-family="'${cvEsc(fam)}', sans-serif" font-weight="${wt}" font-size="${cvN(fs)}" fill="${col(cv.tc)}">${cvEsc(text)}</text>`;
   }
   cv.svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${defs}</defs>`+
-    `<g id="C3 Canvas ${cv.format}"><rect id="Paper" width="${W}" height="${H}" fill="${col(-1)}"/>${art}${txt}</g></svg>`;
+    `<g id="C3 Canvas · ${cv.style} · ${cv.format}"><rect id="Paper" width="${W}" height="${H}" fill="${col(-1)}"/>${art}${txt}</g></svg>`;
   cvArt.innerHTML=cv.svg;cvSize();
 }
 function cvSize(){
@@ -1045,9 +1189,11 @@ function cvSize(){
 }
 addEventListener('resize',()=>{clearTimeout(window.__cv);window.__cv=setTimeout(cvSize,120)});
 
-// which palette colors go on the canvas: the base plus the ones most different from it, skipping paper and ink
+// which palette colors go on the canvas: the base plus the ones most different from it,
+// skipping paper-like and ink-like colors (paper and ink are already on the sheet)
 function cvAutoPick(){
-  const o=palette.map(h=>hexToOklch(h));let cand=palette.map((_,i)=>i).filter(i=>o[i].L<.9&&o[i].L>.22);
+  const o=palette.map(h=>hexToOklch(h));
+  let cand=palette.map((_,i)=>i).filter(i=>o[i].L<.92&&o[i].L>.22&&okDist(palette[i],CV_PAPER.cream)>.06);
   if(cand.length<2)cand=palette.map((_,i)=>i);
   const out=[cand.includes(baseIndex)?baseIndex:cand[0]];
   while(out.length<Math.min(3,cand.length)){
@@ -1113,6 +1259,7 @@ function cvSeg(id,attr,after){
   el.addEventListener('click',e=>{const b=e.target.closest('[data-'+attr+']');if(!b)return;
     cv[attr==='f'?'format':attr]=b.dataset[attr];el.querySelectorAll('[data-'+attr+']').forEach(x=>x.setAttribute('aria-pressed',x===b));after()});
 }
+cvSeg('cvStyle','style',()=>{cv.L=cvLayout();cvDraw()});
 cvSeg('cvPaper','paper',()=>{cvTextChips();cvDraw()});
 cvSeg('cvFormat','f',()=>{cv.L=cvLayout();cvDraw()});
 cvSeg('cvPlace','place',cvDraw);
