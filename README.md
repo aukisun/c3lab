@@ -14,7 +14,7 @@ By nuforms lab.
 
 - **Upload** — drop a photo; C³ pulls up to eight of its real colours, exactly as they appear in the image.
 - **Code** — type or paste a HEX value.
-- **Picker** — pick a colour by eye.
+- **Picker** — the mouse becomes an eyedropper: click any colour on the screen — a photo in another window, a part of this page, anything — and it becomes the base. *Pick from screen* opens it again; Esc cancels. The colour square stays for picking by eye. The eyedropper works in Chrome, Edge, Arc and other Chromium browsers; Safari and Firefox keep the colour square.
 
 **Four harmonies**
 

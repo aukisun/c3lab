@@ -125,6 +125,11 @@ body.kbd button:focus-visible,body.kbd label:focus-visible,input:focus-visible{o
 .drop b{color:var(--ink);font-weight:400}
 
 .picker{display:flex;flex-direction:column;gap:10px;width:300px;max-width:100%}
+/* the square and the eyedropper button share one row, so the fixed-height panel never spills onto the harmonies */
+.panels{grid-template-columns:minmax(0,1fr)}
+#panel-picker{flex-wrap:nowrap;width:100%}
+#panel-picker .picker{flex:0 1 300px;min-width:0}
+#eyeBtn{flex:none}
 #sv{width:100%;height:92px;border-radius:14px;cursor:crosshair;display:block;touch-action:none}
 #hue{
   -webkit-appearance:none;appearance:none;width:100%;height:12px;border-radius:999px;outline:none;
@@ -324,6 +329,7 @@ select:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
       <canvas id="sv" width="600" height="184" aria-label="Saturation and brightness"></canvas>
       <input type="range" id="hue" min="0" max="359" value="42" aria-label="Hue">
     </div>
+    <button class="go" id="eyeBtn" type="button" hidden title="Your mouse becomes an eyedropper · click any color on the screen · Esc to cancel">Pick from screen</button>
   </div>
 </div>
 
@@ -744,7 +750,7 @@ tabs.forEach(t=>t.addEventListener('click',()=>{
   if(canvasView){cvSize();return}
   layout();placeOrbs();   // the capsules were hidden while the canvas was open
   ['code','upload','picker'].forEach(m=>document.getElementById('panel-'+m).hidden=m!==t.dataset.mode);
-  if(t.dataset.mode==='picker')syncPicker();
+  if(t.dataset.mode==='picker'){syncPicker();pickFromScreen()}   // the tab click itself turns the mouse into an eyedropper
 }));
 
 /* code */
@@ -797,6 +803,18 @@ hue.addEventListener('input',()=>{ps.h=+hue.value;pickerUpdate()});
 function svPoint(e){const r=sv.getBoundingClientRect();ps.s=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));ps.v=Math.max(0,Math.min(1,1-(e.clientY-r.top)/r.height));pickerUpdate()}
 sv.addEventListener('pointerdown',e=>{sv.setPointerCapture(e.pointerId);svPoint(e)});
 sv.addEventListener('pointermove',e=>{if(e.buttons)svPoint(e)});
+// eyedropper: in Chromium browsers (Chrome, Edge, Arc, Yab…) the mouse picks any color on the screen —
+// a photo in another window, a part of this page, anything. Safari and Firefox lack it and keep the color square.
+const eyeBtn=document.getElementById('eyeBtn'),hasEye='EyeDropper' in window;
+eyeBtn.hidden=!hasEye;
+function pickFromScreen(){
+  if(!hasEye)return;
+  new EyeDropper().open().then(r=>{
+    const hex=/^#[0-9a-f]{6}$/i.test(r.sRGBHex)?r.sRGBHex.toUpperCase():null;if(!hex)return;
+    photoActive=false;fromBase(hex);syncPicker();toast('Picked '+hex);
+  }).catch(()=>{});   // Esc or a click outside: nothing picked
+}
+eyeBtn.addEventListener('click',pickFromScreen);
 
 /* ---------- copy, export, theme ---------- */
 const toastEl=document.getElementById('toast');let tt;
