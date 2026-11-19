@@ -580,10 +580,13 @@ function buildPalette(base){
   return cols;
 }
 
-/* ---------- image extraction (k-means++) ---------- */
+/* ---------- image extraction ---------- */
 // Pull the real colours of a photo.
 // Every swatch is a pixel colour that actually occurs in the image (no averaging),
 // so flat brand colours come back exactly and photo noise does not invent muddy in-betweens.
+// Textured surfaces (brick, roof tiles, foliage) scatter one colour over hundreds of tiny boxes, so similar
+// boxes are grouped first and a group is judged by its total share — otherwise a 30% brick red that no single
+// box carries past the threshold vanishes from the palette.
 function extract(img,k=8){
   const c=document.createElement('canvas'),sc=Math.min(1,320/Math.max(img.width,img.height));
   c.width=Math.max(1,Math.round(img.width*sc));c.height=Math.max(1,Math.round(img.height*sc));
@@ -604,18 +607,29 @@ function extract(img,k=8){
     const hex=rgbToHex(best>>16&255,best>>8&255,best&255);
     return{hex,n:bx.n,lab:lab(hex)};
   }).sort((a,b)=>b.n-a.n);
-  // 2. walk from the most common colour down; a colour joins the palette only if it is clearly different
-  //    from those already picked, otherwise its pixels count towards the closest picked colour
-  const T=.06,minShare=.006,picked=[];
+  // 2. walk from the most common box down and group boxes that look alike (OKLab distance under T);
+  //    a group's centre follows its pixels as it grows
+  const T=.06,minShare=.006,groups=[];
   const dist=(p,q)=>Math.hypot(p[0]-q[0],p[1]-q[1],p[2]-q[2]);
   for(const cd of cand){
-    let near=null,nd=1e9;for(const p of picked){const dd=dist(p.lab,cd.lab);if(dd<nd){nd=dd;near=p}}
-    if(near&&nd<T){near.n+=cd.n;continue}
-    if(picked.length<k&&cd.n/N>=minShare)picked.push({...cd});
-    else if(near)near.n+=cd.n;
+    let near=null,nd=1e9;for(const g of groups){const dd=dist(g.c,cd.lab);if(dd<nd){nd=dd;near=g}}
+    if(near&&nd<T){const t=near.n+cd.n;near.c=near.c.map((v,j)=>(v*near.n+cd.lab[j]*cd.n)/t);near.n=t;near.m.push(cd)}
+    else groups.push({c:[...cd.lab],n:cd.n,m:[cd]});
   }
+  // 3. the biggest groups (each at least 0.6% of the photo) make the palette, up to k
+  groups.sort((a,b)=>b.n-a.n);
+  const picked=[];for(const g of groups){if(picked.length>=k||g.n/N<minShare)break;picked.push(g)}
+  // 4. the rest count towards the closest picked colour only when they look like it; distant ones are left out,
+  //    so the weights do not credit a colour with pixels of a very different one
+  for(const g of groups){
+    if(picked.includes(g))continue;
+    let near=null,nd=1e9;for(const p of picked){const dd=dist(p.c,g.c);if(dd<nd){nd=dd;near=p}}
+    if(near&&nd<2*T)near.n+=g.n;
+  }
+  // 5. each group is shown by its real pixel colour closest to the group's centre
   const tot=picked.reduce((a,p)=>a+p.n,0)||1;
-  return picked.map(p=>({hex:p.hex,w:p.n/tot})).sort((a,b)=>hexToOklch(b.hex).L-hexToOklch(a.hex).L);
+  return picked.map(p=>{const rep=p.m.reduce((a,b)=>dist(b.lab,p.c)<dist(a.lab,p.c)?b:a);return{hex:rep.hex,w:p.n/tot}})
+    .sort((a,b)=>hexToOklch(b.hex).L-hexToOklch(a.hex).L);
 }
 
 /* ---------- swatch interactions: click copies, double-click promotes to base ---------- */

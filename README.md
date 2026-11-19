@@ -39,7 +39,7 @@ By nuforms lab.
 
 Harmonies are calculated on the **OKLCH** colour wheel rather than HSL. In OKLCH, equal lightness *looks* equally light, so a partner colour sits at the same visual weight as the base instead of glowing (yellows) or sinking (blues). Colours that fall outside what a screen can show are brought back by lowering their chroma while keeping hue and lightness.
 
-Photo colours are real pixel colours: the image is sampled without blending, similar colours are grouped, and each group is represented by its most common exact colour. Nothing is averaged, so flat brand colours come back exactly and no muddy in-between colours are invented.
+Photo colours are real pixel colours: the image is sampled without blending, similar colours are grouped first, and each group is represented by the real pixel colour closest to its centre. Grouping first matters for texture — brick, roof tiles or foliage are made of hundreds of slightly different shades, and together they count as one strong colour instead of disappearing. Nothing is averaged, so flat brand colours come back exactly and no muddy in-between colours are invented.
 
 ## Project
 
