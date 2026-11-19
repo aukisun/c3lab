@@ -235,6 +235,7 @@ body.kbd .pill:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
 .toast{
   position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);
   background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:12px;
+  width:max-content;max-width:calc(100vw - 32px);text-align:center;   /* long hints wrap inside the screen */
   opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;
 }
 .toast.show{opacity:1;transform:translate(-50%,0)}
@@ -765,9 +766,14 @@ hexInput.addEventListener('paste',e=>{e.preventDefault();const t=(e.clipboardDat
 
 /* upload */
 const drop=document.getElementById('drop'),fileInput=document.getElementById('fileInput');
+// HEIC is the iPhone photo format: Safari opens it, Chrome-family browsers cannot
+const isHeic=f=>!!f&&(/\.(heic|heif)$/i.test(f.name)||/image\/hei[cf]/i.test(f.type));
 function handleFile(f,sampleUrl){
-  if(!sampleUrl&&(!f||!f.type.startsWith('image/')))return toast('Choose an image file');
+  if(!sampleUrl&&(!f||!(f.type.startsWith('image/')||isHeic(f))))return toast('Choose an image file');
   const url=sampleUrl||URL.createObjectURL(f),img=new Image();
+  // a file the browser cannot decode would otherwise fail in silence
+  img.onerror=()=>{if(!sampleUrl)URL.revokeObjectURL(url);
+    toast(isHeic(f)?'HEIC photos don’t open in this browser · export as JPG or PNG':'Can’t read this image · try JPG or PNG',4500)};
   img.onload=()=>{
     document.getElementById('thumb').style.backgroundImage='url('+url+')';
     const ex=extract(img,8),cols=ex.map(e=>e.hex);
@@ -778,7 +784,8 @@ function handleFile(f,sampleUrl){
     setHarmony('photo');showPhoto();toast(cols.length+' colors pulled from your photo');
   };img.src=url;
 }
-fileInput.addEventListener('change',()=>handleFile(fileInput.files[0]));
+// clear the field after reading, so choosing the same photo again still counts as a change
+fileInput.addEventListener('change',()=>{handleFile(fileInput.files[0]);fileInput.value=''});
 drop.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fileInput.click()}});
 ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over')}));
 ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over')}));
@@ -818,7 +825,7 @@ eyeBtn.addEventListener('click',pickFromScreen);
 
 /* ---------- copy, export, theme ---------- */
 const toastEl=document.getElementById('toast');let tt;
-function toast(m){toastEl.textContent=m;toastEl.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>toastEl.classList.remove('show'),1600)}
+function toast(m,ms=1600){toastEl.textContent=m;toastEl.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>toastEl.classList.remove('show'),ms)}
 function copy(text,msg){
   const fallback=()=>{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
     try{document.execCommand('copy');toast(msg)}catch(_){toast('Select and copy: '+text)}ta.remove()};
